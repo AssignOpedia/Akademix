@@ -57,7 +57,7 @@ export default function CourseDetails() {
           <p className="eyebrow mt-5">Your instructor</p>
           <h2 className="mt-1 font-display text-2xl text-ink">{course.instructor}</h2>
           <p className="mt-5 border-t border-line pt-4 text-sm text-slate">Course level: {course.level}</p>
-          <Link to="/career-guidance" className="btn-primary mt-6 w-full">Ask about this course</Link>
+          <Link to="/assignment-guidance" className="btn-primary mt-6 w-full">Get assignment guidance</Link>
           <Link to="/courses" className="btn-secondary mt-3 w-full">Browse all courses</Link>
         </aside>
       </div>

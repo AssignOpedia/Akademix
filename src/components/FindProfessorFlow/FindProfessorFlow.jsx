@@ -9,6 +9,12 @@ import ProfessorCard from '../ProfessorCard/ProfessorCard'
 import CountryFlag from '../UI/CountryFlag'
 
 const levels = ['School', 'Undergraduate', 'Postgraduate', 'Professional']
+const guidanceByLevel = {
+  School: ['Subject Guidance', 'Academic Guidance'],
+  Undergraduate: ['Academic Guidance', 'Assignment Guidance'],
+  Postgraduate: ['Research Guidance', 'Higher Study Guidance'],
+  Professional: ['Career Guidance', 'Subject Guidance'],
+}
 
 export default function FindProfessorFlow() {
   const dispatch = useDispatch()
@@ -23,10 +29,15 @@ export default function FindProfessorFlow() {
 
   const results = useMemo(() => {
     if (!subject) return []
-    let list = professors.filter((p) => p.subjects.includes(subject))
+    const relevantGuidance = guidanceByLevel[level] ?? []
+    let list = professors.filter((professor) =>
+      professor.subjects.includes(subject) &&
+      professor.guidance.some((guidance) => relevantGuidance.includes(guidance))
+    )
+    if (!list.length) list = professors.filter((professor) => professor.subjects.includes(subject))
     if (country) list = list.filter((p) => p.countryCode === country.code)
     return list.slice(0, 3)
-  }, [subject, country])
+  }, [level, subject, country])
 
   const goStep = (n) => setStep(n)
 
@@ -169,7 +180,8 @@ export default function FindProfessorFlow() {
               ))}
             </div>
 
-            <p className="text-ink font-medium mb-4">Recommended experts</p>
+            <p className="text-ink font-medium mb-1">Recommended experts</p>
+            <p className="text-xs text-slate mb-4">Matches for {level} study in {subject}{country ? ` in ${country.name}` : ''}.</p>
             {results.length ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {results.map((p) => (
@@ -204,8 +216,7 @@ export default function FindProfessorFlow() {
               You selected {confirmedProfessor.name} for academic guidance.
             </h3>
             <p className="text-slate mb-6">
-              This is a frontend prototype — no request has been sent yet. In the full platform,
-              this step would start your guidance conversation.
+              Your selection is saved for this visit. No request has been sent yet.
             </p>
             <div className="flex items-center gap-4">
               <Link

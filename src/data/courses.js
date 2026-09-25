@@ -11,5 +11,6 @@ export const courses = [
   { id: 'course-010', title: 'Environmental Science and Sustainable Systems', subject: 'Environmental Science', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '6 weeks', mode: 'Online', lessons: 18 },
   { id: 'course-011', title: 'Public Health Research Methods', subject: 'Public Health', level: 'Postgraduate', instructor: 'Akademix Academic Team', duration: '6 weeks', mode: 'Online', lessons: 16 },
   { id: 'course-012', title: 'Research Design, Academic Writing and Integrity', subject: 'Legal Research', level: 'Research', instructor: 'Akademix Academic Team', duration: '5 weeks', mode: 'Online', lessons: 15 },
+  { id: 'course-013', title: 'R Programming for Statistics and Research', subject: 'R', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '8 weeks', mode: 'Online', lessons: 24 },
+  { id: 'course-014', title: 'Practical Data Analysis with Python', subject: 'Data Analysis', level: 'Undergraduate', instructor: 'Akademix Academic Team', duration: '8 weeks', mode: 'Online', lessons: 24 },
 ]
-

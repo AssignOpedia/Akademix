@@ -300,8 +300,7 @@ export default function PageBackground() {
       disposables.forEach((d) => d.dispose())
       renderer.dispose()
     }
-  }, [])
-
+  }, []) 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       <style>{`
@@ -330,3 +329,4 @@ export default function PageBackground() {
     </div>
   )
 }
+

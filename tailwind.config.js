@@ -13,7 +13,7 @@ export default {
         stone: '#F1EDE4',
         slate: {
           DEFAULT: '#5B6472',
-          light: '#8A93A0',
+          light: '#667085',
         },
         brass: {
           DEFAULT: '#B8873B',

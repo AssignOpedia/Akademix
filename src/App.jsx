@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
+import HelpChat from './components/HelpChat/HelpChat'
 import PageBackground from './pages/PageBackground'
 import AppRoutes from './routes/AppRoutes'
 
@@ -65,6 +66,7 @@ export default function App() {
         </main>
 
         <Footer />
+        <HelpChat />
       </div>
     </div>
   )

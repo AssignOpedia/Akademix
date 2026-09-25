@@ -7,7 +7,7 @@ export default function CareerGuidance() {
         <p className="eyebrow mb-2">Career guidance</p>
         <h1 className="font-display text-4xl text-ink mb-3">Plan where your subject can take you</h1>
         <p className="text-slate max-w-xl">
-          Select a subject to see realistic, demo career pathways connected to it.
+          Explore possible career pathways connected to your subject and interests.
         </p>
       </div>
       <CareerExplorer />

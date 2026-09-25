@@ -6,8 +6,6 @@ import { selectExpertForGuidance } from '../../features/professors/professorSlic
 import CountryFlag from '../../components/UI/CountryFlag'
 import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar'
 
-const availability = ['Mon 4:00 PM', 'Wed 6:30 PM', 'Sat 11:00 AM']
-
 export default function ProfessorProfile() {
   const { id } = useParams()
   const dispatch = useDispatch()
@@ -88,14 +86,9 @@ export default function ProfessorProfile() {
 
         <aside className="lg:sticky lg:top-28 h-fit">
           <div className="card p-6">
-            <p className="text-sm text-slate mb-3">Availability</p>
-            <div className="space-y-2 mb-6">
-              {availability.map((slot) => (
-                <div key={slot} className="text-sm text-ink border border-line rounded-lg px-3 py-2">
-                  {slot}
-                </div>
-              ))}
-            </div>
+            <p className="eyebrow mb-2">Next step</p>
+            <h2 className="font-display text-xl text-ink">Plan your guidance</h2>
+            <p className="mt-2 mb-5 text-sm leading-relaxed text-slate">Shortlist {professor.name}, then talk with a student mentor about how this professor could fit your academic goals.</p>
             <button
               onClick={() => dispatch(selectExpertForGuidance(professor.id))}
               className={`w-full rounded-full px-5 py-3 text-sm font-medium transition-colors ${
@@ -106,6 +99,7 @@ export default function ProfessorProfile() {
             >
               {isSelected ? 'Selected for Guidance' : 'Select This Professor'}
             </button>
+            <Link to="/mentoring" className="btn-secondary mt-3 w-full justify-center">Meet the mentors</Link>
           </div>
         </aside>
       </div>

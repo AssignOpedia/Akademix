@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Heart, MapPin, GitCompare, Clock, Star } from 'lucide-react'
+import { Heart, MapPin, GitCompare, Clock } from 'lucide-react'
 import { selectExpertForGuidance, toggleFavoriteProfessor, toggleCompareProfessor } from '../../features/professors/professorSlice'
 import { getCountryByCode } from '../../data/countries'
 import CountryFlag from '../UI/CountryFlag'
@@ -12,6 +12,7 @@ export default function ProfessorCard({ professor }) {
   const isSelected = selectedExperts.includes(professor.id)
   const isFavorite = favoriteExperts.includes(professor.id)
   const isCompared = comparedExperts.includes(professor.id)
+  const compareLimitReached = comparedExperts.length >= 3 && !isCompared
   const country = getCountryByCode(professor.countryCode)
 
   return (
@@ -24,7 +25,7 @@ export default function ProfessorCard({ professor }) {
         </div>
         <div className="ml-auto flex items-center gap-1">
           <button onClick={() => dispatch(toggleFavoriteProfessor(professor.id))} aria-label={isFavorite ? `Remove ${professor.name} from favorites` : `Favorite ${professor.name}`} className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-brass-dark bg-brass/10' : 'text-slate-light hover:text-ink hover:bg-stone'}`}><Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} /></button>
-          <button onClick={() => dispatch(toggleCompareProfessor(professor.id))} aria-label={isCompared ? `Remove ${professor.name} from comparison` : `Compare ${professor.name}`} className={`p-2 rounded-full transition-colors ${isCompared ? 'text-ink bg-stone' : 'text-slate-light hover:text-ink hover:bg-stone'}`}><GitCompare size={16} /></button>
+          <button type="button" onClick={() => dispatch(toggleCompareProfessor(professor.id))} disabled={compareLimitReached} title={compareLimitReached ? 'Remove a professor from the comparison shortlist first' : undefined} aria-label={isCompared ? `Remove ${professor.name} from comparison` : `Compare ${professor.name}`} className={`p-2 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isCompared ? 'text-ink bg-stone' : 'text-slate-light hover:text-ink hover:bg-stone'}`}><GitCompare size={16} /></button>
         </div>
       </div>
 
@@ -38,7 +39,10 @@ export default function ProfessorCard({ professor }) {
         <Clock size={14} />
         <span>{professor.experience} years experience</span>
       </div>
-      <div className="mt-2 flex items-center gap-1.5 text-sm text-slate"><Star size={14} className="text-brass" fill="currentColor" /><span>4.8 rating</span><span className="text-slate-light">·</span><span>Available</span></div>
+
+      <div className="mt-2 text-sm text-slate">
+        <span className="font-medium text-ink">Guidance:</span> {professor.guidance.slice(0, 2).join(', ')}
+      </div>
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         {professor.subjects.slice(0, 3).map((s) => (

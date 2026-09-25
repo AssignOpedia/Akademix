@@ -5,26 +5,71 @@ import { allSubjects } from '../../data/subjects'
 import { departments } from '../../data/departments'
 import { countries } from '../../data/countries'
 import { courses } from '../../data/courses'
+import { universities } from '../../data/universities'
+import { professors } from '../../data/professors'
 import CountryFlag from '../UI/CountryFlag'
 
 const levels = ['School', 'Undergraduate', 'Postgraduate', 'Professional', 'Research']
 const degrees = ['Certificate', 'Diploma', "Bachelor's degree", "Master's degree", 'Doctorate']
+const departmentsByInterest = {
+  Technology: ['Engineering & Technology', 'Computer Science'],
+  Business: ['Business & Finance'],
+  Health: ['Medical & Health'],
+  Creative: ['Design & Creative'],
+  Society: ['Humanities & Social Sciences', 'Law'],
+  Science: ['Science & Research', 'Engineering & Technology'],
+}
+const schoolSubjectsByInterest = {
+  Technology: ['Mathematics', 'Physics', 'Computer Science', 'Statistics'],
+  Business: ['Mathematics', 'Economics', 'Accountancy', 'Business Studies'],
+  Health: ['Biology', 'Chemistry', 'Psychology'],
+  Creative: ['English', 'History'],
+  Society: ['English', 'History', 'Geography', 'Economics', 'Political Science', 'Sociology', 'Psychology'],
+  Science: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Statistics', 'Environmental Science'],
+}
 
 export default function CareerExplorer() {
   const [path, setPath] = useState({ interest: '', level: '', subject: '', department: '', degree: '', country: '' })
   const [step, setStep] = useState(0)
-  const update = (key, value) => setPath((current) => ({ ...current, [key]: value }))
+  const update = (key, value) => setPath((current) => {
+    const next = { ...current, [key]: value }
+    if (key === 'interest') return { ...next, level: '', subject: '', department: '', degree: '', country: '' }
+    if (key === 'level') return { ...next, subject: '', department: '', degree: '', country: '' }
+    if (key === 'subject') return { ...next, department: '', degree: '', country: '' }
+    if (key === 'department') return { ...next, degree: '', country: '' }
+    if (key === 'degree') return { ...next, country: '' }
+    return next
+  })
   const availableDepartments = departments.filter((department) => !path.subject || department.subjects.includes(path.subject))
+  const departmentOptions = (availableDepartments.length
+    ? availableDepartments
+    : departments.filter((department) => departmentsByInterest[path.interest]?.includes(department.name)))
+    .map((department) => department.name)
+  const subjectOptions = path.interest
+    ? allSubjects.map((subject) => subject.name).filter((name) =>
+      departments.some((department) => departmentsByInterest[path.interest]?.includes(department.name) && department.subjects.includes(name)) ||
+      schoolSubjectsByInterest[path.interest]?.includes(name)
+    )
+    : allSubjects.map((subject) => subject.name)
   const availableCourses = useMemo(
-    () => courses.filter((course) => (!path.subject || course.subject === path.subject) && (!path.level || course.level === path.level)),
+    () => courses.filter((course) => (!path.subject || course.subject.toLowerCase().includes(path.subject.toLowerCase()) || path.subject.toLowerCase().includes(course.subject.toLowerCase())) && (!path.level || course.level === path.level)),
     [path.subject, path.level]
   )
   const careers = path.subject ? (careerPaths[path.subject] || ['Researcher', 'Subject Specialist', 'Academic Consultant', 'Industry Professional']) : []
+  const countryCode = countries.find((country) => country.name === path.country)?.code
+  const matchingProfessors = professors.filter((professor) =>
+    (!countryCode || professor.countryCode === countryCode) &&
+    (professor.subjects.some((subject) => subject.toLowerCase().includes(path.subject.toLowerCase()) || path.subject.toLowerCase().includes(subject.toLowerCase())) || professor.department === path.department)
+  ).slice(0, 3)
+  const matchingUniversities = universities.filter((university) =>
+    (!countryCode || university.countryCode === countryCode) &&
+    (university.departments.includes(path.department) || university.popularSubjects.some((subject) => subject.toLowerCase().includes(path.subject.toLowerCase()) || path.subject.toLowerCase().includes(subject.toLowerCase())))
+  ).slice(0, 3)
   const steps = [
     { key: 'interest', label: 'Interest', options: ['Technology', 'Business', 'Health', 'Creative', 'Society', 'Science'] },
     { key: 'level', label: 'Education level', options: levels },
-    { key: 'subject', label: 'Subject', options: allSubjects.map((subject) => subject.name) },
-    { key: 'department', label: 'Department', options: availableDepartments.map((department) => department.name) },
+    { key: 'subject', label: 'Subject', options: subjectOptions },
+    { key: 'department', label: 'Department', options: departmentOptions },
     { key: 'degree', label: 'Degree', options: degrees },
     { key: 'country', label: 'Country', options: countries },
   ]
@@ -106,14 +151,20 @@ export default function CareerExplorer() {
             </div>
             <div className="card bg-stone p-5">
               <p className="text-xs uppercase tracking-wider text-brass-dark">Recommended next steps</p>
-              <div className="mt-3 space-y-2 text-sm text-ink">
-                <p>{availableCourses.length || 'New'} matching course options</p>
-                <p>Explore {path.country} universities and professors</p>
-                <p>Get guidance for {path.department}</p>
-              </div>
-              <div className="flex flex-wrap gap-3 mt-5">
-                <Link to="/professors" className="btn-primary">Find a Professor</Link>
-                <Link to="/universities" className="btn-secondary">Explore Universities</Link>
+              <div className="mt-4 space-y-5 text-sm text-ink">
+                <div>
+                  <p className="font-medium">Courses for {path.level.toLowerCase()} study</p>
+                  {availableCourses.length ? <ul className="mt-2 space-y-1.5">{availableCourses.slice(0, 3).map((course) => <li key={course.id}><Link className="text-brass-dark hover:underline" to={`/courses/${course.id}`}>{course.title}</Link></li>)}</ul> : <p className="mt-1 text-slate">No exact course matches yet. <Link to="/courses" className="text-brass-dark underline">Browse all courses</Link></p>}
+                </div>
+                <div>
+                  <p className="font-medium">Professors in {path.country}</p>
+                  {matchingProfessors.length ? <ul className="mt-2 space-y-1.5">{matchingProfessors.map((professor) => <li key={professor.id}><Link className="text-brass-dark hover:underline" to={`/professors/${professor.id}`}>{professor.name}</Link></li>)}</ul> : <p className="mt-1 text-slate">No exact matches for this combination. <Link to="/professors" className="text-brass-dark underline">Browse professors</Link></p>}
+                </div>
+                <div>
+                  <p className="font-medium">Universities in {path.country}</p>
+                  {matchingUniversities.length ? <ul className="mt-2 space-y-1.5">{matchingUniversities.map((university) => <li key={university.id}><Link className="text-brass-dark hover:underline" to={`/universities/${university.id}`}>{university.name}</Link></li>)}</ul> : <p className="mt-1 text-slate">No exact matches for this combination. <Link to="/universities" className="text-brass-dark underline">Browse universities</Link></p>}
+                </div>
+                <p className="text-slate">Suggested guidance area: {path.department}</p>
               </div>
             </div>
           </div>

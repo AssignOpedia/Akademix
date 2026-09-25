@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom'
 import { setProfessorFilters, clearProfessorFilters } from '../../features/professors/professorSlice'
@@ -9,13 +9,15 @@ import CountryFlag from '../../components/UI/CountryFlag'
 
 export default function Professors() {
   const dispatch = useDispatch()
-  const [searchParams] = useSearchParams()
-  const { professors, professorFilters } = useSelector((s) => s.professors)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { professors, professorFilters, favoriteExperts } = useSelector((s) => s.professors)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
   const queryDepartment = departments.find((department) => department.slug === searchParams.get('department'))?.name
-  const activeDepartment = professorFilters.department || queryDepartment
+  const activeDepartment = queryDepartment || professorFilters.department
 
   const filtered = useMemo(() => {
     const result = professors.filter((p) => {
+      if (favoritesOnly && !favoriteExperts.includes(p.id)) return false
       const query = professorFilters.query.trim().toLowerCase()
       if (query && !`${p.name} ${p.title} ${p.university} ${p.subjects.join(' ')} ${p.expertise.join(' ')}`.toLowerCase().includes(query)) return false
       if (professorFilters.country && p.country !== professorFilters.country) return false
@@ -30,7 +32,7 @@ export default function Professors() {
     if (professorFilters.sort === 'experience') return [...result].sort((a, b) => b.experience - a.experience)
     if (professorFilters.sort === 'name') return [...result].sort((a, b) => a.name.localeCompare(b.name))
     return result
-  }, [professors, professorFilters, activeDepartment])
+  }, [professors, professorFilters, activeDepartment, favoritesOnly, favoriteExperts])
 
   const universities = [...new Set(professors.map((professor) => professor.university))]
   const subjects = [...new Set(professors.flatMap((professor) => professor.subjects))].sort()
@@ -53,12 +55,12 @@ export default function Professors() {
         <select value={professorFilters.language || ''} onChange={(event) => dispatch(setProfessorFilters({ language: event.target.value || null }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="">All languages</option>{languages.map((language) => <option key={language}>{language}</option>)}</select>
         <select value={professorFilters.minExperience} onChange={(event) => dispatch(setProfessorFilters({ minExperience: Number(event.target.value) }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="0">Any experience</option><option value="5">5+ years</option><option value="10">10+ years</option><option value="15">15+ years</option></select>
         <select value={professorFilters.sort} onChange={(event) => dispatch(setProfessorFilters({ sort: event.target.value }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="recommended">Recommended</option><option value="experience">Most experience</option><option value="name">Name A-Z</option></select>
-        <button onClick={() => dispatch(clearProfessorFilters())} className="btn-secondary h-11">Clear filters</button>
+        <button onClick={() => { dispatch(clearProfessorFilters()); setSearchParams({}); setFavoritesOnly(false) }} className="btn-secondary h-11">Clear filters</button>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8">
         <button
-          onClick={() => dispatch(clearProfessorFilters())}
+          onClick={() => { dispatch(clearProfessorFilters()); setSearchParams({}); setFavoritesOnly(false) }}
           className={`rounded-full border px-4 py-2 text-sm ${
             !professorFilters.country && !activeDepartment
               ? 'border-brass bg-brass/5'
@@ -70,7 +72,7 @@ export default function Professors() {
         {departments.map((d) => (
           <button
             key={d.slug}
-            onClick={() => dispatch(setProfessorFilters({ department: d.name }))}
+            onClick={() => { dispatch(setProfessorFilters({ department: null })); setSearchParams({ department: d.slug }) }}
             className={`rounded-full border px-4 py-2 text-sm ${
               activeDepartment === d.name
                 ? 'border-brass bg-brass/5'
@@ -104,7 +106,15 @@ export default function Professors() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-5"><p className="text-sm text-slate"><span className="font-medium text-ink">{filtered.length}</span> experts found</p><p className="text-xs text-slate">Use the compare icon to shortlist up to three</p></div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <p className="text-sm text-slate"><span className="font-medium text-ink">{filtered.length}</span> experts found</p>
+        <div className="flex items-center gap-4">
+          <button type="button" aria-pressed={favoritesOnly} onClick={() => setFavoritesOnly((value) => !value)} className={`text-xs font-medium ${favoritesOnly ? 'text-brass-dark underline underline-offset-4' : 'text-slate hover:text-ink'}`}>
+            {favoritesOnly ? 'Showing favorites' : `My favorites (${favoriteExperts.length})`}
+          </button>
+          <p className="text-xs text-slate">Use the compare icon to shortlist up to three</p>
+        </div>
+      </div>
       <ProfessorGrid professors={filtered} />
     </div>
   )

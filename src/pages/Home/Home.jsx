@@ -141,23 +141,26 @@ export default function Home() {
   )
 }
 */
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { 
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import SearchBar from '../../components/Search/SearchBar';
+import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar';
+import { subjectCategories as appSubjectCategories, allSubjects } from '../../data/subjects';
+import { universities as appUniversities } from '../../data/universities';
+import { mentorProfiles } from '../../data/mentors';
+import {
   GraduationCap, 
   BookOpen, 
   Award, 
   Globe, 
   Search, 
   ArrowRight, 
-  CheckCircle2, 
   Sparkles, 
   UserCheck, 
   Compass, 
   FileText, 
   Briefcase, 
   ChevronRight, 
-  X, 
   Star, 
   ShieldCheck, 
   Users, 
@@ -165,56 +168,99 @@ import {
   PlayCircle
 } from 'lucide-react';
 
-const subjectCategories = [
-  { category: 'STEM', subjects: ['Artificial Intelligence', 'Quantum Physics', 'Biotechnology', 'Data Science', 'Astrophysics', 'Robotics'] },
-  { category: 'Humanities', subjects: ['Philosophy of Mind', 'Global Economics', 'Cognitive Psychology', 'International Relations', 'Modern History', 'Sociology'] },
-  { category: 'Business & Law', subjects: ['Corporate Finance', 'Intellectual Property Law', 'Venture Capital', 'Strategic Management', 'Behavioral Economics', 'Global Marketing'] }
-];
+function AnimatedStat({ value, suffix = '', decimals = 0 }) {
+  const [count, setCount] = useState(0)
+  const counterRef = useRef(null)
 
-const featuredSubjects = subjectCategories.flatMap((c) =>
-  c.subjects.slice(0, 2).map((name) => ({ slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name, category: c.category }))
-).slice(0, 9);
-
-const universities = [
-  { id: '1', name: 'Massachusetts Institute of Technology', location: 'Cambridge, MA, USA', rank: '#1 Global', badge: 'Elite STEM', students: '11,500+' },
-  { id: '2', name: 'University of Oxford', location: 'Oxford, United Kingdom', rank: '#2 Global', badge: 'Collegiate', students: '24,000+' },
-  { id: '3', name: 'Stanford University', location: 'Stanford, CA, USA', rank: '#3 Global', badge: 'Innovation Hub', students: '17,000+' },
-  { id: '4', name: 'ETH Zurich', location: 'Zurich, Switzerland', rank: '#6 Global', badge: 'Research Giant', students: '22,000+' },
-  { id: '5', name: 'National University of Singapore', location: 'Singapore', rank: '#8 Global', badge: 'Asia Leader', students: '38,000+' },
-  { id: '6', name: 'University of Cambridge', location: 'Cambridge, United Kingdom', rank: '#4 Global', badge: 'Historic Excellence', students: '23,000+' }
-];
-
-const mentorCategories = [
-  { slug: 'ivy-league-admissions', name: 'Ivy League Admissions Mentors', description: 'Former admissions officers and alumni guiding your essays and portfolio.' },
-  { slug: 'research-publication', name: 'Research & Thesis Advisors', description: 'PhD holders from top labs assisting with peer-reviewed publications.' },
-  { slug: 'career-accelerator', name: 'FAANG & MBB Mentors', description: 'Industry leaders providing mock interviews and portfolio reviews.' },
-  { slug: 'olympiad-prep', name: 'Competitive Exam Coaches', description: 'Gold medalists training you for Olympiads and rigorous entrance tests.' },
-  { slug: 'early-stem', name: 'Young Innovators Track', description: 'Guiding high schoolers building real patents, apps, and startups.' },
-  { slug: 'global-scholarships', name: 'Scholarship & Grant Strategists', description: 'Securing full-rides and prestigious global fellowships.' }
-];
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProfessor, setSelectedProfessor] = useState(null);
-  const [successToast, setSuccessToast] = useState(false);
-
-  // Stop the page behind the popup from scrolling while it is open
   useEffect(() => {
-    document.body.style.overflow = modalOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [modalOpen]);
+    const element = counterRef.current
+    if (!element) return undefined
 
-  const handleModalSubmit = (e) => {
-    e.preventDefault();
-    setModalOpen(false);
-    setSuccessToast(true);
-    setTimeout(() => setSuccessToast(false), 4000);
-  };
+    let frameId
+    let hasStarted = false
+    const duration = 1600
+    const finish = () => setCount(value)
+    const start = () => {
+      if (hasStarted) return
+      hasStarted = true
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        finish()
+        return
+      }
+
+      const startedAt = performance.now()
+      const animate = (now) => {
+        const progress = Math.min((now - startedAt) / duration, 1)
+        const easedProgress = 1 - (1 - progress) ** 4
+        setCount(value * easedProgress)
+        if (progress < 1) frameId = requestAnimationFrame(animate)
+        else finish()
+      }
+      frameId = requestAnimationFrame(animate)
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      start()
+      return () => cancelAnimationFrame(frameId)
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      start()
+      observer.disconnect()
+    }, { threshold: 0.45 })
+    observer.observe(element)
+
+    return () => {
+      observer.disconnect()
+      cancelAnimationFrame(frameId)
+    }
+  }, [value])
+
+  const formattedCount = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(count)
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans relative selection:bg-amber-500 selection:text-white overflow-x-hidden">
+    <span ref={counterRef} aria-label={`${new Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value)}${suffix}`}>
+      <span aria-hidden="true">{formattedCount}{suffix}</span>
+    </span>
+  )
+}
+
+export default function Home() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAllSubjects, setShowAllSubjects] = useState(false);
+
+  // Use the same catalogue as the directory pages so every subject link resolves.
+  const homeSubjectCategories = appSubjectCategories.map((category) => ({
+    category: category.name,
+    subjects: category.subjects,
+  }));
+  const homeFeaturedSubjects = allSubjects.map((subject) => ({
+    ...subject,
+    category: homeSubjectCategories.find((category) => category.subjects.includes(subject.name))?.category ?? 'School & Foundation',
+  }));
+  const normalizedSubjectQuery = searchQuery.trim().toLowerCase();
+  const filteredSubjects = homeFeaturedSubjects.filter((subject) =>
+    (activeTab === 'all' || subject.category === activeTab) &&
+    (!normalizedSubjectQuery || subject.name.toLowerCase().includes(normalizedSubjectQuery))
+  );
+  const visibleSubjects = normalizedSubjectQuery || showAllSubjects
+    ? filteredSubjects
+    : filteredSubjects.slice(0, 12);
+  const homeUniversities = appUniversities.slice(0, 6).map((university, index) => ({
+    ...university,
+    location: `${university.city}, ${university.country}`,
+    rank: `Featured ${String(index + 1).padStart(2, '0')}`,
+    students: 'Explore profile',
+  }));
+
+  return (
+    <div className="min-h-screen text-slate-900 font-sans relative selection:bg-amber-500 selection:text-white overflow-x-clip">
       {/* Reveal / hover animation styles (background now comes from PageBackground) */}
       <style>{`
         @keyframes fadeUp {
@@ -241,11 +287,12 @@ export default function App() {
         }
         .text-shimmer {
           display: inline-block;
-          background-image: linear-gradient(90deg, #f59e0b, #fb7185, #818cf8, #f59e0b);
+          background-image: linear-gradient(90deg, #9a3412, #be123c, #6d28d9, #9a3412);
           background-size: 200% auto;
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
+          filter: drop-shadow(0 2px 5px rgba(16,24,38,0.14));
           animation:
             wordIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.55s both,
             gradientFlow 4s linear 1.4s infinite;
@@ -334,15 +381,6 @@ export default function App() {
         }
       `}</style>
 
-      {/* Success Toast Notification */}
-      {successToast && createPortal(
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-900 text-white shadow-2xl border border-amber-500/30 animate-bounce">
-          <CheckCircle2 className="w-5 h-5 text-amber-400" />
-          <span className="text-sm font-medium">Match request submitted successfully! Our dean will email you shortly.</span>
-        </div>,
-        document.body
-      )}
-
       {/* Hero */}
       <section className="relative z-10 pt-16 pb-24 lg:pt-28 lg:pb-36 fade-up">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -370,8 +408,8 @@ export default function App() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-16">
             <button 
-              onClick={() => { setSelectedProfessor('General Inquiry'); setModalOpen(true); }}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-base shadow-xl shadow-amber-500/25 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 hover-glow"
+              onClick={() => navigate('/professors')}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-amber-700 to-amber-800 text-white font-bold text-base shadow-xl shadow-amber-500/25 hover:from-amber-800 hover:to-amber-900 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 hover-glow"
             >
               Find Your Professor <ArrowRight className="w-5 h-5" />
             </button>
@@ -383,13 +421,17 @@ export default function App() {
             </a>
           </div>
 
+          <div className="max-w-xl mx-auto -mt-8 mb-14">
+            <SearchBar />
+          </div>
+
           {/* Glassmorphic Quick-Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {[
-              { label: 'Global Professors', value: '1,400+', icon: <GraduationCap className="w-8 h-8 text-amber-600" /> },
-              { label: 'Universities Covered', value: '350+', icon: <Globe className="w-8 h-8 text-indigo-600" /> },
-              { label: 'Success Rate', value: '98.4%', icon: <ShieldCheck className="w-8 h-8 text-emerald-600" /> },
-              { label: 'Research Papers Guided', value: '4,500+', icon: <Lightbulb className="w-8 h-8 text-amber-500" /> }
+              { label: 'Global Students', value: 1400, suffix: '+', icon: <GraduationCap className="w-8 h-8 text-amber-600" /> },
+              { label: 'Universities Covered', value: 350, suffix: '+', icon: <Globe className="w-8 h-8 text-indigo-600" /> },
+              { label: 'Success Rate', value: 98.4, suffix: '%', decimals: 1, icon: <ShieldCheck className="w-8 h-8 text-emerald-600" /> },
+              { label: 'Research Papers Guided', value: 4500, suffix: '+', icon: <Lightbulb className="w-8 h-8 text-amber-500" /> }
             ].map((stat, idx) => (
               <div 
                 key={idx}
@@ -397,7 +439,7 @@ export default function App() {
                 style={{ animationDelay: `${idx * 0.08}s` }}
               >
                 <div className="mb-3 p-3 rounded-2xl bg-amber-500/10 w-fit icon-pop">{stat.icon}</div>
-                <div className="text-2xl sm:text-3xl font-bold font-serif text-slate-900 mb-1 group-hover:text-amber-700 transition-colors">{stat.value}</div>
+                <div className="text-2xl sm:text-3xl font-bold font-serif text-slate-900 mb-1 group-hover:text-amber-700 transition-colors"><AnimatedStat value={stat.value} suffix={stat.suffix} decimals={stat.decimals} /></div>
                 <div className="text-xs sm:text-sm text-slate-700 font-semibold">{stat.label}</div>
               </div>
             ))}
@@ -424,7 +466,7 @@ export default function App() {
                 className="relative group p-8 rounded-3xl bg-white/90 border border-stone-300/70 hover:border-amber-500/40 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 overflow-hidden shadow-lg hover-tilt card-anim"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center font-bold text-lg mb-6 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm icon-pop">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center font-bold text-lg mb-6 group-hover:bg-amber-700 group-hover:text-white transition-all duration-300 shadow-sm icon-pop">
                   {item.step}
                 </div>
                 <h3 className="text-xl font-serif text-slate-900 mb-3 group-hover:text-amber-700 transition-colors">{item.title}</h3>
@@ -445,14 +487,15 @@ export default function App() {
             </div>
             
             {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2 bg-white/95 p-1.5 rounded-2xl border border-stone-300 shadow-md">
-              {['all', 'STEM', 'Humanities', 'Business & Law'].map((tab) => (
+            <div className="flex max-w-full flex-wrap gap-2 rounded-2xl border border-stone-300 bg-white/95 p-1.5 shadow-md">
+              {['all', ...homeSubjectCategories.map((category) => category.category)].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
+                  aria-pressed={activeTab === tab}
                   className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all capitalize ${
                     activeTab === tab 
-                      ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25' 
+                      ? 'bg-amber-800 text-white shadow-md shadow-amber-500/25' 
                       : 'text-slate-700 hover:text-slate-900 hover:bg-stone-100'
                   }`}
                 >
@@ -464,37 +507,56 @@ export default function App() {
 
           <div className="mb-10 max-w-md relative">
             <Search className="absolute left-4 top-3.5 w-5 h-5 text-stone-500" />
-            <input 
-              type="text" 
-              placeholder="Search specific subject (e.g., Quantum Physics)..." 
+            <input
+              type="text"
+              placeholder="Search specific subject (e.g., Quantum Physics)..."
+              aria-label="Search subjects"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-5 py-3.5 rounded-2xl bg-white/95 border border-stone-300 text-slate-900 placeholder-stone-500 text-sm focus:outline-none focus:border-amber-500 transition-colors shadow-lg shadow-stone-300/40"
             />
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredSubjects
-              .filter(s => activeTab === 'all' || s.category === activeTab)
-              .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((s) => (
-                <div 
-                  key={s.slug} 
-                  onClick={() => { setSelectedProfessor(s.name); setModalOpen(true); }}
-                  className="group relative p-7 rounded-3xl bg-white/90 backdrop-blur-xl border border-stone-300/70 hover:border-amber-500/50 hover:bg-white transition-all duration-300 cursor-pointer overflow-hidden transform hover:-translate-y-1.5 shadow-xl shadow-stone-300/40 hover-lift card-anim"
+          <p className="mb-5 text-sm text-slate-700" aria-live="polite">
+            Showing {visibleSubjects.length} of {filteredSubjects.length} subject{filteredSubjects.length === 1 ? '' : 's'}
+          </p>
+
+          {visibleSubjects.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleSubjects.map((subject) => (
+                <button
+                  type="button"
+                  key={subject.slug}
+                  onClick={() => navigate(`/subjects/${subject.slug}`)}
+                  className="group relative overflow-hidden rounded-3xl border border-stone-300/70 bg-white/90 p-7 text-left shadow-xl shadow-stone-300/40 transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-500/50 hover:bg-white hover-lift card-anim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-                  <span className="text-xs px-3.5 py-1.5 rounded-full bg-amber-500/10 text-amber-800 font-bold inline-block mb-4 border border-amber-500/20 badge-pop">
-                    {s.category}
+                  <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-bl-full bg-amber-500/5 transition-transform duration-500 group-hover:scale-125" />
+                  <span className="badge-pop mb-4 inline-block rounded-full border border-amber-500/20 bg-amber-500/10 px-3.5 py-1.5 text-xs font-bold text-amber-800">
+                    {subject.category}
                   </span>
-                  <h3 className="text-xl font-serif text-slate-900 mb-2 group-hover:text-amber-700 transition-colors flex items-center justify-between">
-                    {s.name}
-                    <ChevronRight className="w-5 h-5 text-stone-500 group-hover:text-amber-700 transform group-hover:translate-x-1.5 transition-all" />
-                  </h3>
-                  <p className="text-sm text-slate-700">Master core concepts, advanced problem sets, and guided research with top faculty.</p>
-                </div>
-            ))}
-          </div>
+                  <span className="mb-2 flex items-center justify-between gap-3 font-serif text-xl text-slate-900 transition-colors group-hover:text-amber-700">
+                    {subject.name}
+                    <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-stone-500 transition-all group-hover:translate-x-1.5 group-hover:text-amber-700" />
+                  </span>
+                  <span className="block text-sm text-slate-700">Explore related courses, professors, universities, and career paths.</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-stone-300 bg-white/85 p-8 text-center shadow-lg">
+              <p className="font-serif text-xl text-slate-900">No subjects match your search.</p>
+              <p className="mt-2 text-sm text-slate-700">Try another subject name or clear your filters.</p>
+              <button type="button" onClick={() => { setSearchQuery(''); setActiveTab('all') }} className="mt-5 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">
+                Clear search and filters
+              </button>
+            </div>
+          )}
+
+          {!normalizedSubjectQuery && filteredSubjects.length > 12 && (
+            <button type="button" onClick={() => setShowAllSubjects((value) => !value)} className="mt-8 rounded-full border border-stone-300 bg-white/90 px-6 py-3 text-sm font-bold text-slate-900 shadow-md transition hover:border-amber-500/50 hover:text-amber-700">
+              {showAllSubjects ? 'Show fewer subjects' : `View all ${filteredSubjects.length} subjects`}
+            </button>
+          )}
         </div>
       </section>
 
@@ -512,7 +574,7 @@ export default function App() {
               { title: 'School Coaching', desc: 'IB, AP, IGCSE & A-Levels mastery with distinction.' },
               { title: 'Entrance Preparation', desc: 'SAT, ACT, GRE, GMAT & LNAT elite test strategies.' },
               { title: 'University Subjects', desc: 'Rigorous collegiate tutoring for top-tier GPA.' },
-              { title: 'Professional Courses', desc: 'Coding, Data Science, Financial Modeling & AI.' },
+              { title: 'Assignment Guidance', desc: 'Understand briefs, plan research, and work through difficult concepts.' },
               { title: 'Skill Development', desc: 'Critical thinking, public speaking & academic writing.' },
               { title: 'Exam Preparation', desc: 'Timed mock tests, score analysis & weakness correction.' },
               { title: 'Research Support', desc: 'Co-authoring papers & journal publication assistance.' },
@@ -520,12 +582,12 @@ export default function App() {
             ].map((coach, index) => (
               <div 
                 key={index} 
-                onClick={() => { setSelectedProfessor(coach.title); setModalOpen(true); }}
+                onClick={() => navigate(coach.title === 'Assignment Guidance' ? '/assignment-guidance' : '/courses')}
                 className="group p-6 rounded-3xl bg-white/90 border border-stone-300/70 hover:border-amber-500/50 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 cursor-pointer flex flex-col justify-between shadow-md hover-lift card-anim"
                 style={{ animationDelay: `${index * 0.06}s` }}
               >
                 <div>
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center font-bold mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors shadow-sm icon-pop">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center font-bold mb-4 group-hover:bg-amber-700 group-hover:text-white transition-colors shadow-sm icon-pop">
                     {index + 1}
                   </div>
                   <h3 className="text-lg font-serif text-slate-900 mb-2 group-hover:text-amber-700 transition-colors">{coach.title}</h3>
@@ -549,18 +611,18 @@ export default function App() {
               <h2 className="font-serif text-3xl sm:text-4xl text-slate-900">Explore universities worldwide.</h2>
             </div>
             <button 
-              onClick={() => { setSelectedProfessor('University Admissions Strategy'); setModalOpen(true); }}
+              onClick={() => navigate('/universities')}
               className="text-sm font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 self-start sm:self-auto"
             >
-              View all admissions tracks <ArrowRight className="w-4 h-4" />
+              View all universities <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {universities.map((u) => (
+            {homeUniversities.map((u) => (
               <div 
                 key={u.id} 
-                onClick={() => { setSelectedProfessor(u.name); setModalOpen(true); }}
+                onClick={() => navigate(`/universities/${u.id}`)}
                 className="group p-7 rounded-3xl bg-white/90 backdrop-blur-xl border border-stone-300/70 hover:border-amber-500/50 hover:bg-white transition-all duration-300 cursor-pointer shadow-xl shadow-stone-300/40 relative overflow-hidden hover-tilt card-anim"
               >
                 <div className="flex items-start justify-between mb-6">
@@ -576,8 +638,8 @@ export default function App() {
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> {u.location}
                 </p>
                 <div className="pt-4 border-t border-stone-200 flex items-center justify-between text-xs text-slate-700">
-                  <span>Active Scholars: <strong className="text-slate-900">{u.students}</strong></span>
-                  <span className="text-amber-700 font-bold group-hover:translate-x-1.5 transition-transform flex items-center gap-1">Connect <ArrowRight className="w-3.5 h-3.5" /></span>
+                  <span>{u.type}</span>
+                  <span className="text-amber-700 font-bold group-hover:translate-x-1.5 transition-transform flex items-center gap-1">View profile <ArrowRight className="w-3.5 h-3.5" /></span>
                 </div>
               </div>
             ))}
@@ -589,24 +651,29 @@ export default function App() {
       <section id="mentoring" className="relative z-10 py-24 border-t border-stone-300/60 bg-white/40 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-16">
-            <span className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-2 block">One-to-One Mentoring</span>
-            <h2 className="font-serif text-3xl sm:text-5xl text-slate-900 mb-4">Find a mentor for exactly where you are.</h2>
-            <p className="text-slate-700 text-sm sm:text-base">No generalized advice. Only targeted mentorship from world authorities in your field.</p>
+            <span className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-2 block">Student Mentoring</span>
+            <h2 className="font-serif text-3xl sm:text-5xl text-slate-900 mb-4">Get a guide for your academic next step.</h2>
+            <p className="text-slate-700 text-sm sm:text-base">Our mentors help you explore subjects, plan for college, and decide what kind of professor will support your goals.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {mentorCategories.map((m) => (
+            {mentorProfiles.map((m) => (
               <div 
-                key={m.slug} 
-                onClick={() => { setSelectedProfessor(m.name); setModalOpen(true); }}
+                key={m.id}
+                onClick={() => navigate('/mentoring')}
                 className="group p-6 rounded-3xl bg-white/90 border border-stone-300/70 hover:border-amber-500/50 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 cursor-pointer shadow-md flex flex-col justify-between hover-lift card-anim"
               >
                 <div>
-                  <h3 className="text-lg font-serif text-slate-900 mb-2 group-hover:text-amber-700 transition-colors">{m.name}</h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <ProfessorAvatar professor={m} size="card" />
+                    <p className="text-xs uppercase tracking-wider text-amber-700 font-bold">Student guide</p>
+                  </div>
+                  <h3 className="text-lg font-serif text-slate-900 group-hover:text-amber-700 transition-colors">{m.name}</h3>
+                  <p className="text-sm font-medium text-slate-800 mt-1 mb-2">{m.role}</p>
                   <p className="text-xs text-slate-700 leading-relaxed">{m.description}</p>
                 </div>
                 <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between text-xs text-amber-700 font-bold">
-                  <span>Book Consultation</span>
+                  <span>Explore this guide</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
                 </div>
               </div>
@@ -614,10 +681,10 @@ export default function App() {
           </div>
 
           <button 
-            onClick={() => { setSelectedProfessor('General Mentoring Program'); setModalOpen(true); }}
+            onClick={() => navigate('/mentoring')}
             className="px-8 py-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all shadow-xl hover-lift"
           >
-            Find a Mentor Now
+            Meet all mentors
           </button>
         </div>
       </section>
@@ -633,10 +700,10 @@ export default function App() {
                 Get structured academic guidance, concept clarification, research direction and feedback to help you understand and complete your academic work independently with absolute confidence.
               </p>
               <button 
-                onClick={() => { setSelectedProfessor('Assignment Guidance Track'); setModalOpen(true); }}
-                className="px-6 py-3.5 rounded-full bg-amber-500 text-white font-bold text-sm shadow-lg shadow-amber-500/25 hover:bg-amber-600 transition-all flex items-center gap-2 hover-glow"
+                onClick={() => navigate('/assignment-guidance')}
+                className="px-6 py-3.5 rounded-full bg-amber-800 text-white font-bold text-sm shadow-lg shadow-amber-500/25 hover:bg-amber-900 transition-all flex items-center gap-2 hover-glow"
               >
-                Request Academic Advisor <ArrowRight className="w-4 h-4" />
+                Explore Assignment Guidance <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 
@@ -644,7 +711,7 @@ export default function App() {
               <span className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-2 block">Career Explorer</span>
               <h2 className="font-serif text-3xl sm:text-4xl text-slate-900 mb-6">Chart your trajectory from classroom to industry.</h2>
               <p className="text-slate-700 text-sm sm:text-base leading-relaxed mb-8">
-                Map your academic degree to high-growth career paths in tech, finance, biotech, and global policy with real-time feedback from hiring managers.
+                Explore study routes and career areas connected to technology, finance, health, creative work, and research.
               </p>
               <div className="flex flex-wrap gap-2">
                 {['Quantitative Finance', 'AI Research Scientist', 'Biotech Venture Capital', 'Global Trade Attorney', 'Quantum Engineer'].map((career, i) => (
@@ -653,6 +720,9 @@ export default function App() {
                   </span>
                 ))}
               </div>
+              <button type="button" onClick={() => navigate('/career-guidance')} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-700 hover:text-amber-900">
+                Build my pathway <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -665,81 +735,19 @@ export default function App() {
             Tell us where you are. We'll help you find the way.
           </h2>
           <p className="text-slate-700 text-base sm:text-lg mb-10 max-w-2xl mx-auto">
-            Join thousands of successful scholars who transformed their academic journey with Akademix.
+            Explore academic options and find guidance for your next step.
           </p>
           <button 
-            onClick={() => { setSelectedProfessor('Ultimate Matchmaker'); setModalOpen(true); }}
-            className="px-10 py-5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-lg shadow-2xl shadow-amber-500/30 transform hover:-translate-y-1 transition-all hover-glow"
+            onClick={() => navigate('/professors')}
+            className="px-10 py-5 rounded-full bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white font-bold text-lg shadow-2xl shadow-amber-500/30 transform hover:-translate-y-1 transition-all hover-glow"
           >
             Find Your Professor Now
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-stone-300 bg-white/80 py-12 text-slate-600 text-xs sm:text-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-bold text-white shadow-md">A</div>
-            <span className="font-serif text-slate-900 text-lg font-semibold">Akademix Global</span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 text-slate-700 font-semibold">
-            <a href="#subjects" className="hover:text-amber-700 transition-colors">Privacy Policy</a>
-            <a href="#coaching" className="hover:text-amber-700 transition-colors">Terms of Service</a>
-            <a href="#universities" className="hover:text-amber-700 transition-colors">Faculty Portal</a>
-            <a href="#mentoring" className="hover:text-amber-700 transition-colors">Contact Support</a>
-          </div>
-          <div className="text-slate-500">
-            © {new Date().getFullYear()} Akademix Inc. All rights reserved.
-          </div>
-        </div>
-      </footer>
 
-      {/* Modal */}
-      {modalOpen && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-6 sm:pt-10 pb-6 overflow-y-auto bg-slate-900/60 backdrop-blur-md">
-          <div className="relative w-full max-w-lg p-8 rounded-3xl bg-white border border-stone-300 shadow-2xl">
-            <button 
-              onClick={() => setModalOpen(false)}
-              className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 text-slate-600 hover:text-slate-900 flex items-center justify-center text-sm transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
 
-            <div className="mb-6">
-              <span className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-1 block">Professor & Mentor Matching</span>
-              <h3 className="font-serif text-2xl text-slate-900">Connect with {selectedProfessor || 'an Expert'}</h3>
-            </div>
-
-            <form onSubmit={handleModalSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">Full Name</label>
-                <input required type="text" placeholder="e.g. Alexander Vance" className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-300 text-slate-900 placeholder-stone-500 text-sm focus:outline-none focus:border-amber-500" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">Academic Email</label>
-                <input required type="email" placeholder="e.g. alexander@university.edu" className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-300 text-slate-900 placeholder-stone-500 text-sm focus:outline-none focus:border-amber-500" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">Academic Level / Target Goal</label>
-                <select className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-300 text-slate-900 text-sm focus:outline-none focus:border-amber-500">
-                  <option>High School / IB / AP</option>
-                  <option>Undergraduate Student</option>
-                  <option>Graduate / PhD Candidate</option>
-                  <option>Professional / Test Prep</option>
-                </select>
-              </div>
-              <button 
-                type="submit"
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm shadow-lg shadow-amber-500/25 transition-all mt-4 flex items-center justify-center gap-2"
-              >
-                Confirm Match Request <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 }

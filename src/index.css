@@ -22,7 +22,7 @@ body,
 body {
   @apply text-ink font-sans antialiased;
   background: linear-gradient(120deg, #fffaf2 0%, #fffaf2 48%, #e7f2ee 100%);
-  overflow-x: hidden;
+  overflow-x: clip;
   text-rendering: optimizeLegibility;
 }
 
@@ -202,14 +202,24 @@ img {
 .card {
   @apply bg-white border border-line rounded-2xl;
   overflow-wrap: anywhere;
-  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  transition: border-color 260ms ease, box-shadow 260ms ease, transform 260ms cubic-bezier(.2,.8,.2,1), background-color 260ms ease;
   position: relative;
 }
 
 .card:hover {
   border-color: rgb(184 135 59 / 0.35);
-  box-shadow: 0 18px 38px rgb(16 24 38 / 0.1);
-  transform: translateY(-5px);
+  box-shadow: 0 20px 42px rgb(16 24 38 / 0.12);
+  transform: translateY(-6px) scale(1.01);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .card:hover {
+    transform: none;
+  }
 }
 
 .page-shell {

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Search } from 'lucide-react'
+import { useState } from 'react'
+import { NavLink, Link } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
 import CountryTicker from '../CountryTicker/CountryTicker'
 
 const links = [
@@ -9,7 +9,6 @@ const links = [
   { to: '/subjects', label: 'Subjects' },
   { to: '/universities', label: 'Universities' },
   { to: '/countries', label: 'Countries' },
-  { to: '/courses', label: 'Courses' },
   { to: '/mentoring', label: 'Mentoring' },
   { to: '/career-guidance', label: 'Career Guidance' },
   { to: '/about', label: 'About' },
@@ -17,42 +16,19 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const focusSearch = () => {
-    if (location.pathname !== '/') {
-      navigate('/#global-search')
-      return
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [authMode, setAuthMode] = useState('login')
+  const [authNotice, setAuthNotice] = useState('')
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('akademix-student-profile') || 'null')
+    } catch {
+      return null
     }
-
-    const search = document.getElementById('global-search')
-
-    search?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    })
-
-    search?.querySelector('input')?.focus()
-  }
-
-  useEffect(() => {
-    if (location.hash !== '#global-search') return undefined
-
-    const frame = requestAnimationFrame(() => {
-      const search = document.getElementById('global-search')
-
-      search?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      })
-
-      search?.querySelector('input')?.focus()
-    })
-
-    return () => cancelAnimationFrame(frame)
-  }, [location.hash])
-
+  })
+  const [profileName, setProfileName] = useState(profile?.name || '')
+  const [profileEmail, setProfileEmail] = useState(profile?.email || '')
+  const [password, setPassword] = useState('')
   return (
     <header className="sticky top-0 z-50">
       {/* Country ticker */}
@@ -125,21 +101,10 @@ export default function Navbar() {
           ========================== */}
           <div className="hidden xl:flex items-center gap-3 shrink-0">
 
-            {/* Search */}
+            {/* Login and sign up */}
             <button
-              aria-label="Search"
-              onClick={focusSearch}
-              className="
-                text-slate-800
-                hover:text-amber-700
-                transition-colors
-              "
-            >
-              <Search size={18} />
-            </button>
-
-            {/* Login */}
-            <button
+              type="button"
+              onClick={() => { setAuthMode('login'); setAuthNotice(''); setProfileOpen(true) }}
               className="
                 text-sm
                 font-semibold
@@ -150,21 +115,21 @@ export default function Navbar() {
                 transition-colors
               "
             >
-              Login
+              Login / Sign up
             </button>
 
             {/* Get Guidance */}
             <Link
-              to="/professors"
+              to="/assignment-guidance"
               className="
                 px-5
                 py-2.5
                 rounded-full
                 bg-gradient-to-r
-                from-amber-500
-                to-amber-600
-                hover:from-amber-600
-                hover:to-amber-700
+                from-amber-700
+                to-amber-800
+                hover:from-amber-800
+                hover:to-amber-900
                 text-white
                 font-semibold
                 text-sm
@@ -177,7 +142,7 @@ export default function Navbar() {
                 whitespace-nowrap
               "
             >
-              Get Guidance
+              Assignment Guidance
             </Link>
           </div>
 
@@ -251,9 +216,13 @@ export default function Navbar() {
               </NavLink>
             ))}
 
+            <button type="button" onClick={() => { setOpen(false); setAuthMode('login'); setAuthNotice(''); setProfileOpen(true) }} className="py-2.5 text-left text-sm font-semibold text-slate-800 hover:text-amber-700">
+              Login / Sign up
+            </button>
+
             {/* Mobile CTA */}
             <Link
-              to="/professors"
+              to="/assignment-guidance"
               onClick={() => setOpen(false)}
               className="
                 mt-4
@@ -262,21 +231,60 @@ export default function Navbar() {
                 py-3
                 rounded-full
                 bg-gradient-to-r
-                from-amber-500
-                to-amber-600
+                from-amber-700
+                to-amber-800
                 text-white
                 font-semibold
                 text-sm
                 shadow-lg
                 shadow-amber-500/25
                 transition-all
-                hover:from-amber-600
-                hover:to-amber-700
+                hover:from-amber-800
+                hover:to-amber-900
               "
             >
-              Find Your Professor
+              Assignment Guidance
             </Link>
           </nav>
+        </div>
+      )}
+
+      {profileOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setProfileOpen(false) }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="student-profile-title" className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div><p className="eyebrow mb-1">Akademix account</p><h2 id="student-profile-title" className="font-display text-2xl text-ink">{authMode === 'login' ? 'Welcome back' : 'Create your account'}</h2><p className="mt-2 text-sm text-slate">{authMode === 'login' ? 'Log in to your student account.' : 'Sign up to get started with Akademix.'}</p></div>
+              <button type="button" aria-label="Close login dialog" onClick={() => setProfileOpen(false)} className="rounded-lg p-2 text-slate hover:bg-stone"><X size={18} /></button>
+            </div>
+            <div className="mb-5 grid grid-cols-2 rounded-xl bg-stone p-1">
+              {['login', 'signup'].map((mode) => <button key={mode} type="button" aria-pressed={authMode === mode} onClick={() => { setAuthMode(mode); setAuthNotice('') }} className={`rounded-lg py-2 text-sm font-medium capitalize transition-colors ${authMode === mode ? 'bg-white text-ink shadow-sm' : 'text-slate hover:text-ink'}`}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>)}
+            </div>
+            <form onSubmit={(event) => {
+              event.preventDefault()
+              if (authMode === 'signup') {
+                const savedProfile = { name: profileName.trim(), email: profileEmail.trim() }
+                try {
+                  localStorage.setItem('akademix-student-profile', JSON.stringify(savedProfile))
+                  setProfile(savedProfile)
+                  setAuthNotice('Your name and email are saved on this device for guidance forms. Account creation needs a connected authentication service; your password was not stored.')
+                } catch {
+                  setAuthNotice('Account creation is not connected yet. Your details could not be saved in this browser.')
+                }
+                return
+              }
+              setAuthNotice('Account login is not connected yet. Your password has not been sent or saved.')
+            }} className="space-y-4">
+              {authMode === 'signup' && <label className="block text-sm font-medium text-ink">Name<input required maxLength={80} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="name" /></label>}
+              <label className="block text-sm font-medium text-ink">Email<input required type="email" maxLength={254} value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="email" /></label>
+              <label className="block text-sm font-medium text-ink">Password<input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete={authMode === 'login' ? 'current-password' : 'new-password'} /></label>
+              <p className="text-xs text-slate">Authentication is not connected yet. Passwords are not stored or transmitted.</p>
+              {authNotice && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-ink">{authNotice}</p>}
+              <div className="flex flex-wrap justify-end gap-3 pt-1">
+                <button type="button" onClick={() => setProfileOpen(false)} className="btn-secondary">Cancel</button>
+                <button type="submit" className="btn-primary">{authMode === 'login' ? 'Log in' : 'Create account'}</button>
+              </div>
+            </form>
+          </section>
         </div>
       )}
     </header>

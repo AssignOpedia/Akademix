@@ -30,12 +30,12 @@ export default function Countries() {
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
             <div>
               <h1 className="font-display text-4xl md:text-6xl leading-tight">Find your next academic horizon.</h1>
-              <p className="text-paper/65 max-w-xl mt-5 leading-relaxed">
+              <p className="text-paper/80 max-w-xl mt-5 leading-relaxed">
                 Explore {countries.length} study destinations, each with a growing guide to universities,
                 professors and academic pathways.
               </p>
             </div>
-            <p className="text-sm text-paper/50 max-w-xs">Every country has a story worth studying.</p>
+            <p className="text-sm text-paper/75 max-w-xs">Every country has a story worth studying.</p>
           </div>
         </div>
       </section>

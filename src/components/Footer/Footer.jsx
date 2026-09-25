@@ -43,7 +43,7 @@ export default function Footer() {
 
         {columns.map((col) => (
           <div key={col.title}>
-            <p className="text-xs tracking-wide text-paper/50 mb-3">{col.title}</p>
+            <p className="text-xs tracking-wide text-paper/75 mb-3">{col.title}</p>
             <ul className="space-y-2">
               {col.links.map((l) => (
                 <li key={l.label}>
@@ -57,7 +57,7 @@ export default function Footer() {
         ))}
 
         <div>
-          <p className="text-xs tracking-wide text-paper/50 mb-3">Global</p>
+          <p className="text-xs tracking-wide text-paper/75 mb-3">Global</p>
           <ul className="grid grid-cols-2 gap-y-2 gap-x-3">
             {countries.map((c) => (
               <li key={c.code}>
@@ -74,8 +74,8 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-content py-5 text-xs text-paper/50">
-          © {new Date().getFullYear()} Akademix. Frontend prototype — demo data only.
+        <div className="container-content py-5 text-xs text-paper/75">
+          © {new Date().getFullYear()} Akademix. Academic guidance for every stage of your journey.
         </div>
       </div>
     </footer>
