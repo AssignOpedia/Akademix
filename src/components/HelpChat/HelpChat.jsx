@@ -57,6 +57,7 @@ function getReply(message) {
 
 export default function HelpChat() {
   const [open, setOpen] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(true)
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState([welcomeMessage])
   const transcriptRef = useRef(null)
@@ -67,6 +68,11 @@ export default function HelpChat() {
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight
     }
   }, [messages, open])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setShowWelcome(false), 8000)
+    return () => window.clearTimeout(timeout)
+  }, [])
 
   const sendMessage = (value = question) => {
     const content = value.trim()
@@ -146,8 +152,21 @@ export default function HelpChat() {
         </section>
       )}
 
-      <button type="button" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close help chat' : 'Open help chat'} aria-expanded={open} className="flex h-14 w-14 items-center justify-center rounded-full bg-ink text-paper shadow-xl shadow-slate-900/25 transition-transform hover:scale-105 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
-        {open ? <X size={22} /> : <img src={assistantAvatar} alt="" className="h-14 w-14 rounded-full object-cover" />}
+      {!open && showWelcome && (
+        <div className="flex max-w-[min(20rem,calc(100vw-2rem))] items-start gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-xl shadow-slate-900/15">
+          <img src={assistantAvatar} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+          <button type="button" onClick={() => { setOpen(true); setShowWelcome(false) }} className="flex-1 text-left text-sm leading-relaxed text-ink">
+            <span className="block font-semibold">Welcome to Akademix!</span>
+            What can I help you find today?
+          </button>
+          <button type="button" onClick={() => setShowWelcome(false)} aria-label="Dismiss welcome message" className="-mr-2 -mt-2 rounded-full p-1 text-slate hover:bg-stone-100 hover:text-ink">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      <button type="button" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close help chat' : 'Open help chat'} aria-expanded={open} className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-ink text-paper shadow-xl shadow-slate-900/25 transition-transform hover:scale-105 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
+        {open ? <X size={24} /> : <img src={assistantAvatar} alt="" className="h-[4.5rem] w-[4.5rem] rounded-full object-cover" />}
       </button>
     </div>
   )
