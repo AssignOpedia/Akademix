@@ -316,7 +316,7 @@ export default function IntroSplash() {
 
       {/* ---- Interactive Container (Holds Animated Text & Logo) ---- */}
       <motion.div
-        className="relative z-10 flex flex-col items-center justify-center p-4"
+        className="relative z-10 flex flex-col items-center justify-center p-4 text-center w-full max-w-4xl mx-auto"
         style={{ rotateX: tiltX, rotateY: tiltY, perspective: 1000 }}
         initial={{ opacity: 0, scale: 0.7, y: 20 }}
         animate={{
@@ -342,22 +342,22 @@ export default function IntroSplash() {
           },
         }}
       >
-        {/* ---- LARGER & BOLDER "WELCOME TO" TEXT ---- */}
+        {/* ---- LARGER & PROPERLY CENTERED "WELCOME TO" TEXT ---- */}
         <motion.div
-          className="flex space-x-[0.3em] mb-3 sm:mb-4 font-extrabold tracking-[0.35em] text-base sm:text-xl md:text-2xl uppercase select-none"
+          className="flex justify-center items-center mb-4 sm:mb-6 font-extrabold tracking-[0.35em] pl-[0.35em] text-2xl sm:text-4xl md:text-5xl lg:text-6xl uppercase select-none w-full text-center"
           variants={welcomeContainerVariants}
           initial="hidden"
           animate="visible"
           style={{
             color: '#D97706', // Warm amber / golden accent
-            textShadow: '0px 3px 14px rgba(217, 119, 6, 0.25)',
+            textShadow: '0px 4px 18px rgba(217, 119, 6, 0.3)',
           }}
         >
           {welcomeText.split('').map((char, index) => (
             <motion.span
               key={index}
               variants={welcomeLetterVariants}
-              className={char === ' ' ? 'w-3 sm:w-4' : 'inline-block'}
+              className={char === ' ' ? 'w-4 sm:w-6 md:w-8' : 'inline-block'}
             >
               {char}
             </motion.span>
@@ -365,7 +365,7 @@ export default function IntroSplash() {
         </motion.div>
 
         {/* ---- LOGO IMAGE ---- */}
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center w-full">
           <img
             src="/akademix-logo.png"
             alt="Akademix"
