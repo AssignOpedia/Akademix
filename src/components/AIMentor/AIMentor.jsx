@@ -916,12 +916,15 @@ options and make their own informed decision.
         onClick={startMentor}
         className="
           fixed
-          bottom-6
-          right-6
-          z-[99999]
+          bottom-28
+          right-3
+          z-[81]
+          sm:bottom-32
+          sm:right-6
           flex
           items-center
-          gap-3
+          gap-2
+          h-11
           rounded-full
           border
           border-white/20
@@ -929,8 +932,7 @@ options and make their own informed decision.
           from-violet-600
           via-purple-600
           to-cyan-500
-          px-5
-          py-4
+          px-3
           text-white
           shadow-2xl
           shadow-violet-900/30
@@ -944,18 +946,18 @@ options and make their own informed decision.
         <span
           className="
             flex
-            h-10
-            w-10
+            h-7
+            w-7
             items-center
             justify-center
             rounded-full
             bg-white/20
           "
         >
-          <Mic size={21} />
+          <Mic size={17} />
         </span>
 
-        <span className="font-semibold">
+        <span className="text-xs font-semibold">
           AI Mentor
         </span>
       </button>
@@ -970,12 +972,16 @@ options and make their own informed decision.
     <div
       className="
         fixed
-        bottom-6
-        right-6
-        z-[99999]
-        w-[360px]
-        max-w-[calc(100vw-32px)]
-        overflow-hidden
+        bottom-28
+        right-3
+        z-[81]
+        w-[calc(100vw-1.5rem)]
+        max-w-[360px]
+        max-h-[calc(100dvh-8rem)]
+        overflow-y-auto
+        sm:bottom-32
+        sm:right-6
+        overflow-x-hidden
         rounded-[28px]
         border
         border-white/15
