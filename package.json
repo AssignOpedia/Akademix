@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^2.24.0",
     "@reduxjs/toolkit": "^2.2.7",
     "framer-motion": "^13.4.1",
     "lucide-react": "^0.383.0",

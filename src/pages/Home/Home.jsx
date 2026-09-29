@@ -221,7 +221,7 @@ export default function Home() {
       `}</style>
 
       {/* Hero */}
-      <section className="relative z-10 pt-16 pb-24 lg:pt-28 lg:pb-36 fade-up">
+      <section className="relative z-10 pt-8 pb-24 lg:pt-20 lg:pb-36 fade-up">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-amber-500/30 text-amber-800 text-xs sm:text-sm font-bold mb-8 shadow-sm">
             <Sparkles className="w-4 h-4 text-amber-600 animate-spin" />

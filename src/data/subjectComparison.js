@@ -143,7 +143,7 @@ export function getSubjectConnections(profileA, profileB) {
   const overlappingTopics = profileA.keyTopics.filter((topic) => profileB.keyTopics.includes(topic))
   const sharedSkills = profileA.coreSkills.filter((skill) => profileB.coreSkills.includes(skill))
   const sharedConcepts = sharedDepartments.map((department) => `Both subjects are listed under ${department}.`)
-  
+
   return {
     sharedConcepts,
     transferableSkills: sharedSkills,
@@ -152,4 +152,32 @@ export function getSubjectConnections(profileA, profileB) {
     combination: `Where an institution offers suitable options, students may combine ${profileA.name} and ${profileB.name} through electives, a minor or concentration, interdisciplinary research, or a project using methods from both. Check the programme catalogue for availability.`,
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
