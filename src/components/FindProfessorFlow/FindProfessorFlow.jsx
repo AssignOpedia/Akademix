@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
 import { departments } from '../../data/departments'
 import { countries } from '../../data/countries'
 import { professors } from '../../data/professors'
 import { selectExpertForGuidance } from '../../features/professors/professorSlice'
 import ProfessorCard from '../ProfessorCard/ProfessorCard'
 import CountryFlag from '../UI/CountryFlag'
+import InquiryForm from '../InquiryForm/InquiryForm'
 
 const levels = ['School', 'Undergraduate', 'Postgraduate', 'Professional']
 const guidanceByLevel = {
@@ -215,20 +215,13 @@ export default function FindProfessorFlow() {
             <h3 className="font-display text-2xl text-ink mb-3">
               You selected {confirmedProfessor.name} for academic guidance.
             </h3>
-            <p className="text-slate mb-6">
-              Your selection is saved for this visit. No request has been sent yet.
-            </p>
-            <div className="flex items-center gap-4">
-              <Link
-                to={`/professors/${confirmedProfessor.id}`}
-                className="btn-primary"
-              >
-                Continue
-              </Link>
-              <button onClick={reset} className="text-sm text-slate hover:text-ink">
-                Start Over
-              </button>
-            </div>
+            <p className="text-slate mb-6">Send an enquiry with your goals so the team has the context needed to follow up.</p>
+            <InquiryForm
+              subject={`guidance with ${confirmedProfessor.name}`}
+              context={`I am a ${level} student interested in ${subject} and would like guidance from ${confirmedProfessor.name}.`}
+              description={`Your request will include your selected expert, ${level} level, and ${subject} focus.`}
+            />
+            <button onClick={reset} className="mt-5 text-sm text-slate hover:text-ink">Start Over</button>
           </div>
         )}
       </div>

@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Heart, MapPin, GitCompare, Clock } from 'lucide-react'
 import { selectExpertForGuidance, toggleFavoriteProfessor, toggleCompareProfessor } from '../../features/professors/professorSlice'
 import { getCountryByCode } from '../../data/countries'
 import CountryFlag from '../UI/CountryFlag'
 import ProfessorAvatar from '../ProfessorAvatar/ProfessorAvatar'
+import InquiryForm from '../InquiryForm/InquiryForm'
 
 export default function ProfessorCard({ professor }) {
+  const [showInquiry, setShowInquiry] = useState(false)
   const dispatch = useDispatch()
   const { selectedExperts, favoriteExperts, comparedExperts } = useSelector((s) => s.professors)
   const isSelected = selectedExperts.includes(professor.id)
@@ -63,7 +66,7 @@ export default function ProfessorCard({ professor }) {
           View Profile
         </Link>
         <button
-          onClick={() => dispatch(selectExpertForGuidance(professor.id))}
+          onClick={() => { dispatch(selectExpertForGuidance(professor.id)); setShowInquiry(true) }}
           className={`ml-auto text-sm rounded-full px-4 py-2 transition-colors ${
             isSelected
               ? 'bg-brass/10 text-brass-dark border border-brass/30'
@@ -73,6 +76,7 @@ export default function ProfessorCard({ professor }) {
           {isSelected ? 'Selected' : 'Select for Guidance'}
         </button>
       </div>
+      {showInquiry && <div className="mt-5 border-t border-line pt-5"><h3 className="mb-3 font-medium text-ink">Request guidance with {professor.name}</h3><InquiryForm subject={`guidance with ${professor.name}`} context={`I would like academic guidance from ${professor.name}.`} description="Share your contact details and what you need help with." /></div>}
     </div>
   )
 }

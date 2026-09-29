@@ -1,12 +1,15 @@
 import { useParams, Link, Navigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getProfessorById } from '../../data/professors'
 import { getCountryByCode } from '../../data/countries'
 import { selectExpertForGuidance } from '../../features/professors/professorSlice'
 import CountryFlag from '../../components/UI/CountryFlag'
 import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar'
+import InquiryForm from '../../components/InquiryForm/InquiryForm'
 
 export default function ProfessorProfile() {
+  const [showInquiry, setShowInquiry] = useState(false)
   const { id } = useParams()
   const dispatch = useDispatch()
   const professor = getProfessorById(id)
@@ -88,9 +91,9 @@ export default function ProfessorProfile() {
           <div className="card p-6">
             <p className="eyebrow mb-2">Next step</p>
             <h2 className="font-display text-xl text-ink">Plan your guidance</h2>
-            <p className="mt-2 mb-5 text-sm leading-relaxed text-slate">Shortlist {professor.name}, then talk with a student mentor about how this professor could fit your academic goals.</p>
+            <p className="mt-2 mb-5 text-sm leading-relaxed text-slate">Send an enquiry about your goals and request guidance from {professor.name}.</p>
             <button
-              onClick={() => dispatch(selectExpertForGuidance(professor.id))}
+              onClick={() => { dispatch(selectExpertForGuidance(professor.id)); setShowInquiry(true) }}
               className={`w-full rounded-full px-5 py-3 text-sm font-medium transition-colors ${
                 isSelected
                   ? 'bg-brass/10 text-brass-dark border border-brass/30'
@@ -99,6 +102,7 @@ export default function ProfessorProfile() {
             >
               {isSelected ? 'Selected for Guidance' : 'Select This Professor'}
             </button>
+            {showInquiry && <div className="mt-5"><InquiryForm subject={`guidance with ${professor.name}`} context={`I would like academic guidance from ${professor.name}.`} description="Share your contact details and what you need help with." /></div>}
             <Link to="/mentoring" className="btn-secondary mt-3 w-full justify-center">Meet the mentors</Link>
           </div>
         </aside>

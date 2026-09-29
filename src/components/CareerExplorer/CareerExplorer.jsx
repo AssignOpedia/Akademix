@@ -8,6 +8,7 @@ import { courses } from '../../data/courses'
 import { universities } from '../../data/universities'
 import { professors } from '../../data/professors'
 import CountryFlag from '../UI/CountryFlag'
+import StudyAbroadSupportForm from '../StudyAbroadSupportForm/StudyAbroadSupportForm'
 
 const levels = ['School', 'Undergraduate', 'Postgraduate', 'Professional', 'Research']
 const degrees = ['Certificate', 'Diploma', "Bachelor's degree", "Master's degree", 'Doctorate']
@@ -31,7 +32,12 @@ const schoolSubjectsByInterest = {
 export default function CareerExplorer() {
   const [path, setPath] = useState({ interest: '', level: '', subject: '', department: '', degree: '', country: '' })
   const [step, setStep] = useState(0)
+  const [saved, setSaved] = useState(false)
+  const [savedPathways, setSavedPathways] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('akademix-pathways') || '[]') } catch { return [] }
+  })
   const update = (key, value) => setPath((current) => {
+    setSaved(false)
     const next = { ...current, [key]: value }
     if (key === 'interest') return { ...next, level: '', subject: '', department: '', degree: '', country: '' }
     if (key === 'level') return { ...next, subject: '', department: '', degree: '', country: '' }
@@ -76,6 +82,32 @@ export default function CareerExplorer() {
   const activeStep = steps[step]
   const isLastStep = step === steps.length - 1
   const isComplete = Object.values(path).every(Boolean)
+
+  const savePathway = () => {
+    const pathway = {
+      ...path,
+      careers,
+      courseIds: availableCourses.slice(0, 3).map((course) => course.id),
+      professorIds: matchingProfessors.map((professor) => professor.id),
+      universityIds: matchingUniversities.map((university) => university.id),
+      savedAt: new Date().toISOString(),
+    }
+    try {
+      const existing = JSON.parse(localStorage.getItem('akademix-pathways') || '[]')
+      const updated = [pathway, ...existing.filter((item) => item.subject !== path.subject || item.country !== path.country)]
+      localStorage.setItem('akademix-pathways', JSON.stringify(updated))
+      setSavedPathways(updated)
+      setSaved(true)
+    } catch {
+      setSaved(false)
+    }
+  }
+
+  const startOver = () => {
+    setPath({ interest: '', level: '', subject: '', department: '', degree: '', country: '' })
+    setStep(0)
+    setSaved(false)
+  }
 
   const goToNextStep = () => {
     if (!path[activeStep.key]) return
@@ -140,14 +172,23 @@ export default function CareerExplorer() {
           </div>
         </div>
 
+        {isComplete && <StudyAbroadSupportForm pathway={path} />}
         {isComplete && (
           <div id="career-results" className="mt-8 grid scroll-mt-8 lg:grid-cols-[1fr_1fr] gap-8">
             <div>
               <p className="eyebrow mb-2">Your pathway</p>
               <h3 className="font-display text-2xl text-ink mb-4">{path.degree} in {path.subject}</h3>
+              <p className="text-sm text-slate mb-5">A {path.level.toLowerCase()} route focused on {path.subject} in {path.country}, through {path.department}.</p>
+              <ol className="space-y-3 mb-6">
+                <li className="card p-4"><span className="text-xs font-semibold uppercase tracking-wider text-brass-dark">01 · Study</span><p className="mt-1 text-sm text-ink">Explore {path.degree} programmes in {path.country}.</p></li>
+                <li className="card p-4"><span className="text-xs font-semibold uppercase tracking-wider text-brass-dark">02 · Build skills</span><p className="mt-1 text-sm text-ink">Use the recommended courses below to develop your {path.subject} foundation.</p></li>
+                <li className="card p-4"><span className="text-xs font-semibold uppercase tracking-wider text-brass-dark">03 · Explore careers</span><p className="mt-1 text-sm text-ink">Compare the career roles below and talk with an expert about your preferred direction.</p></li>
+              </ol>
               <div className="flex flex-wrap gap-2">
                 {careers.map((role) => <span key={role} className="card px-4 py-3 text-sm text-ink">{role}</span>)}
               </div>
+              <div className="mt-6 flex flex-wrap items-center gap-3"><button type="button" onClick={savePathway} className="btn-primary">{saved ? 'Pathway saved' : 'Save my pathway'}</button><button type="button" onClick={startOver} className="text-sm text-slate hover:text-ink">Start a new pathway</button></div>
+              {saved && <p role="status" className="mt-3 text-sm text-emerald-800">Saved in this browser. Find it below under Saved pathways.</p>}
             </div>
             <div className="card bg-stone p-5">
               <p className="text-xs uppercase tracking-wider text-brass-dark">Recommended next steps</p>
@@ -169,6 +210,7 @@ export default function CareerExplorer() {
             </div>
           </div>
         )}
+        {savedPathways.length > 0 && <section className="mt-10" aria-label="Saved pathways"><h3 className="font-display text-xl text-ink mb-3">Saved pathways</h3><div className="grid sm:grid-cols-2 gap-3">{savedPathways.map((item) => <button key={`${item.subject}-${item.country}`} type="button" onClick={() => { setPath({ interest: item.interest, level: item.level, subject: item.subject, department: item.department, degree: item.degree, country: item.country }); setStep(steps.length - 1); setSaved(true); document.getElementById('career-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }} className="card p-4 text-left hover:border-brass"><span className="block font-medium text-ink">{item.degree} in {item.subject}</span><span className="mt-1 block text-sm text-slate">{item.level} · {item.country}</span></button>)}</div></section>}
       </div>
     </section>
   )
