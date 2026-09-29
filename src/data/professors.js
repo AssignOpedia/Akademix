@@ -1,4 +1,8 @@
-export const professors = [
+import { countries } from './countries'
+
+const supportedCountryCodes = new Set(countries.map(({ code }) => code))
+
+const professorRecords = [
   // Artificial Intelligence
   { id: 'prof-002', name: 'Dr. Lena Voss', avatar: 'https://i.pravatar.cc/160?img=47', type: 'demo', title: 'Senior Lecturer, Artificial Intelligence', country: 'Germany', countryCode: 'DE', university: 'Munich Institute of Artificial Intelligence', department: 'Engineering & Technology', subjects: ['Artificial Intelligence', 'Robotics'], experience: 9, languages: ['English', 'German'], expertise: ['AI', 'Robotics', 'Applied Systems'], guidance: ['Academic Guidance', 'Subject Guidance', 'Higher Study Guidance'], bio: 'Works with students moving from theory into applied AI systems and lab-based robotics projects.' },
   { id: 'prof-003', name: 'Dr. Priya Raman', avatar: 'https://i.pravatar.cc/160?img=44', type: 'demo', title: 'Associate Professor, AI & Data Science', country: 'Australia', countryCode: 'AU', university: 'Southern Coast University, Melbourne', department: 'Engineering & Technology', subjects: ['Artificial Intelligence', 'Data Science'], experience: 7, languages: ['English', 'Tamil'], expertise: ['AI Ethics', 'Data Science', 'Statistics'], guidance: ['Academic Guidance', 'Research Guidance', 'Assignment Guidance'], bio: 'Pairs technical AI guidance with a strong emphasis on ethical, responsible research practice.' },
@@ -36,6 +40,8 @@ export const professors = [
   { id: 'prof-027', name: 'Prof. Yuki Tanaka', avatar: 'https://i.pravatar.cc/160?img=58', type: 'demo', title: 'Professor of Linguistics and Education', country: 'Singapore', countryCode: 'SG', university: 'Singapore Institute of Language Studies', department: 'Humanities & Social Sciences', subjects: ['Linguistics', 'Education'], experience: 15, languages: ['English', 'Japanese'], expertise: ['Language Learning', 'Applied Linguistics', 'Teaching Methods'], guidance: ['Academic Guidance', 'Research Guidance', 'Assignment Guidance'], bio: 'Advises students on language learning, education research, and clear academic writing.' },
   { id: 'prof-028', name: 'Dr. Lucia Costa', avatar: 'https://i.pravatar.cc/160?img=59', type: 'demo', title: 'Associate Professor of Geography and Society', country: 'France', countryCode: 'FR', university: 'Lyon School of Geography and Society', department: 'Humanities & Social Sciences', subjects: ['Geography', 'Sociology'], experience: 9, languages: ['English', 'French', 'Portuguese'], expertise: ['Urban Geography', 'Social Change', 'Qualitative Research'], guidance: ['Academic Guidance', 'Research Guidance'], bio: 'Helps students explore how communities, cities, and environments shape one another.' },
 ]
+
+export const professors = professorRecords.filter((professor) => supportedCountryCodes.has(professor.countryCode))
 
 export const getProfessorById = (id) => professors.find((p) => p.id === id)
 

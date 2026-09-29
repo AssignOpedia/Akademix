@@ -1,4 +1,8 @@
-export const universities = [
+import { countries } from './countries'
+
+const supportedCountryCodes = new Set(countries.map(({ code }) => code))
+
+const universityRecords = [
   { id: 'uni-us-mit', name: 'Massachusetts Institute of Technology (MIT)', country: 'United States', countryCode: 'US', city: 'Cambridge, Massachusetts', type: 'Private research university', departments: ['Engineering & Technology', 'Computer Science', 'Science & Research'], popularSubjects: ['Computer Science & Engineering', 'Artificial Intelligence', 'Robotics', 'Data Science'], international: true },
   { id: 'uni-us-princeton', name: 'Princeton University', country: 'United States', countryCode: 'US', city: 'Princeton, New Jersey', type: 'Private research university', departments: ['Engineering & Technology', 'Science & Research', 'Humanities & Social Sciences'], popularSubjects: ['Mathematics', 'Physics', 'Public Policy'], international: true },
   { id: 'uni-us-harvard', name: 'Harvard University', country: 'United States', countryCode: 'US', city: 'Cambridge, Massachusetts', type: 'Private research university', departments: ['Medical & Health', 'Law', 'Business & Finance'], popularSubjects: ['Medicine', 'Law', 'Business'], international: true },
@@ -56,5 +60,7 @@ export const universities = [
   { id: 'uni-za-cape-town', name: 'University of Cape Town', country: 'South Africa', countryCode: 'ZA', city: 'Cape Town', type: 'Public research university', departments: ['Business & Finance', 'Law', 'Science & Research'], popularSubjects: ['Business', 'Law', 'Environmental Science'], international: true },
   { id: 'uni-za-wits', name: 'University of the Witwatersrand', country: 'South Africa', countryCode: 'ZA', city: 'Johannesburg', type: 'Public research university', departments: ['Medical & Health', 'Engineering & Technology', 'Humanities & Social Sciences'], popularSubjects: ['Medicine', 'Engineering', 'Social Sciences'], international: true },
 ]
+
+export const universities = universityRecords.filter((university) => supportedCountryCodes.has(university.countryCode))
 
 export const getUniversityById = (id) => universities.find((u) => u.id === id)

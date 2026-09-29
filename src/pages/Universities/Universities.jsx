@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Search } from 'lucide-react'
 import { universities } from '../../data/universities'
 import { countries } from '../../data/countries'
@@ -11,8 +11,9 @@ import InquiryForm from '../../components/InquiryForm/InquiryForm'
 
 export default function Universities() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const [country, setCountry] = useState(null)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(() => searchParams.get('subject') || '')
 
   if (id) {
     const university = universities.find((item) => item.id === id)

@@ -11,23 +11,89 @@ import SubjectCard from '../../components/SubjectCard/SubjectCard'
 import CourseCard from '../../components/CourseCard/CourseCard'
 import ProfessorCard from '../../components/ProfessorCard/ProfessorCard'
 import UniversityCard from '../../components/UniversityCard/UniversityCard'
+import SubjectComparePanel from '../../components/SubjectCompare/SubjectComparePanel'
+
+const foundationDepartments = {
+  Mathematics: ['Science & Research', 'Business & Finance'],
+  Physics: ['Science & Research', 'Engineering & Technology'],
+  Chemistry: ['Science & Research', 'Medical & Health'],
+  Biology: ['Science & Research', 'Medical & Health'],
+  English: ['Humanities & Social Sciences'],
+  History: ['Humanities & Social Sciences'],
+  Geography: ['Humanities & Social Sciences', 'Science & Research'],
+  Economics: ['Business & Finance', 'Humanities & Social Sciences'],
+  'Political Science': ['Humanities & Social Sciences', 'Law'],
+  Sociology: ['Humanities & Social Sciences'],
+  Psychology: ['Medical & Health', 'Humanities & Social Sciences'],
+  'Computer Science': ['Computer Science', 'Engineering & Technology'],
+  Statistics: ['Science & Research', 'Business & Finance'],
+  'Environmental Science': ['Science & Research', 'Engineering & Technology'],
+  Accountancy: ['Business & Finance'],
+  'Business Studies': ['Business & Finance'],
+}
 
 export default function Subjects() {
   const { slug } = useParams()
-  const [active, setActive] = useState(subjectCategories[0].slug)
+  const [active, setActive] = useState('all-subjects')
   const [subjectQuery, setSubjectQuery] = useState('')
+  const [subjectA, setSubjectA] = useState(null)
+  const [subjectB, setSubjectB] = useState(null)
+  const [compareTarget, setCompareTarget] = useState('A')
   const category = subjectCategories.find((c) => c.slug === active)
-  const filteredSubjects = (category?.subjects ?? []).filter((name) =>
+  const subjectNames = active === 'all-subjects' ? allSubjects.map((subject) => subject.name) : (category?.subjects ?? [])
+  const filteredSubjects = subjectNames.filter((name) =>
     name.toLowerCase().includes(subjectQuery.trim().toLowerCase())
   )
+
+  function selectComparisonSubject(slot, name) {
+    if (!name) {
+      slot === 'A' ? setSubjectA(null) : setSubjectB(null)
+      return
+    }
+    if (slot === 'A' && name === subjectB) {
+      setSubjectA(subjectB)
+      setSubjectB(subjectA)
+      return
+    }
+    if (slot === 'B' && name === subjectA) {
+      setSubjectB(subjectA)
+      setSubjectA(subjectB)
+      return
+    }
+    slot === 'A' ? setSubjectA(name) : setSubjectB(name)
+    setCompareTarget(slot === 'A' ? 'B' : 'A')
+  }
+
+  function compareFromCard(name) {
+    if (name === subjectA) { setCompareTarget('B'); return }
+    if (name === subjectB) { setCompareTarget('A'); return }
+    if (compareTarget === 'A') {
+      setSubjectA(name)
+      setCompareTarget('B')
+    } else {
+      setSubjectB(name)
+      setCompareTarget('A')
+    }
+  }
+
+  function clearComparison() {
+    setSubjectA(null)
+    setSubjectB(null)
+    setCompareTarget('A')
+  }
 
   if (slug) {
     const subject = allSubjects.find((item) => item.slug === slug)
     if (!subject) return <Navigate to="/subjects" replace />
-    const relatedDepartments = departments.filter((department) => department.subjects.includes(subject.name))
+    const exactDepartments = departments.filter((department) => department.subjects.includes(subject.name))
+    const relatedDepartments = exactDepartments.length ? exactDepartments : departments.filter((department) => foundationDepartments[subject.name]?.includes(department.name))
     const relatedCourses = courses.filter((course) => course.subject === subject.name)
-    const relatedProfessors = professors.filter((professor) => professor.subjects.includes(subject.name)).slice(0, 3)
-    const relatedUniversities = universities.filter((university) => university.popularSubjects.includes(subject.name)).slice(0, 3)
+    const exactProfessors = professors.filter((professor) => professor.subjects.includes(subject.name))
+    const professorMatches = exactProfessors.length ? exactProfessors : professors.filter((professor) => relatedDepartments.some((department) => department.name === professor.department))
+    const relatedProfessors = professorMatches.slice(0, 3)
+    const exactUniversities = universities.filter((university) => university.popularSubjects.includes(subject.name))
+    const universityMatches = exactUniversities.length ? exactUniversities : universities.filter((university) => relatedDepartments.some((department) => university.departments.includes(department.name)))
+    const relatedUniversities = universityMatches.slice(0, 3)
     const careers = careerPaths[subject.name] || ['Researcher', 'Subject Specialist', 'Academic Consultant', 'Industry Professional']
 
     return (
@@ -54,6 +120,15 @@ export default function Subjects() {
       </p>
 
       <div className="flex flex-wrap gap-2 mb-10">
+        <button
+          type="button"
+          onClick={() => setActive('all-subjects')}
+          className={`rounded-full border px-4 py-2 text-sm ${
+            active === 'all-subjects' ? 'border-brass bg-brass/5' : 'border-line text-slate hover:text-ink'
+          }`}
+        >
+          All subjects
+        </button>
         {subjectCategories.map((c) => (
           <button
             key={c.slug}
@@ -78,7 +153,7 @@ export default function Subjects() {
           className="h-11 w-full rounded-lg border border-line bg-white pl-10 pr-3 text-sm outline-none focus:border-brass"
         />
       </div>
-
+        
       <p className="mb-4 text-sm text-slate" aria-live="polite">
         {filteredSubjects.length} subject{filteredSubjects.length === 1 ? '' : 's'} found
       </p>
@@ -86,7 +161,7 @@ export default function Subjects() {
       {filteredSubjects.length ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredSubjects.map((name) => (
-            <SubjectCard key={name} subject={{ slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name }} />
+            <SubjectCard key={name} subject={{ slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name }} onCompare={compareFromCard} compareSlot={subjectA === name ? 'A' : subjectB === name ? 'B' : null} />
           ))}
         </div>
       ) : (
@@ -95,6 +170,18 @@ export default function Subjects() {
           <button type="button" onClick={() => setSubjectQuery('')} className="mt-3 text-sm text-brass-dark underline underline-offset-2">Clear search</button>
         </div>
       )}
+      <SubjectComparePanel
+        subjects={allSubjects}
+        subjectA={subjectA}
+        subjectB={subjectB}
+        activeSlot={compareTarget}
+        onSelect={selectComparisonSubject}
+        onSetActiveSlot={setCompareTarget}
+        onSwap={() => { setSubjectA(subjectB); setSubjectB(subjectA) }}
+        onClear={clearComparison}
+        onRestore={(first, second) => { setSubjectA(first); setSubjectB(second) }}
+      />
     </div>
   )
 }
+

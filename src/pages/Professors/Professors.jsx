@@ -14,6 +14,8 @@ export default function Professors() {
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const queryDepartment = departments.find((department) => department.slug === searchParams.get('department'))?.name
   const activeDepartment = queryDepartment || professorFilters.department
+  const querySubject = searchParams.get('subject')
+  const activeSubject = querySubject || professorFilters.subject
 
   const filtered = useMemo(() => {
     const result = professors.filter((p) => {
@@ -22,7 +24,7 @@ export default function Professors() {
       if (query && !`${p.name} ${p.title} ${p.university} ${p.subjects.join(' ')} ${p.expertise.join(' ')}`.toLowerCase().includes(query)) return false
       if (professorFilters.country && p.country !== professorFilters.country) return false
       if (activeDepartment && p.department !== activeDepartment) return false
-      if (professorFilters.subject && !p.subjects.includes(professorFilters.subject)) return false
+      if (activeSubject && !p.subjects.includes(activeSubject)) return false
       if (professorFilters.university && p.university !== professorFilters.university) return false
       if (professorFilters.guidance && !p.guidance.includes(professorFilters.guidance)) return false
       if (professorFilters.language && !p.languages.includes(professorFilters.language)) return false
@@ -32,7 +34,7 @@ export default function Professors() {
     if (professorFilters.sort === 'experience') return [...result].sort((a, b) => b.experience - a.experience)
     if (professorFilters.sort === 'name') return [...result].sort((a, b) => a.name.localeCompare(b.name))
     return result
-  }, [professors, professorFilters, activeDepartment, favoritesOnly, favoriteExperts])
+  }, [professors, professorFilters, activeDepartment, activeSubject, favoritesOnly, favoriteExperts])
 
   const universities = [...new Set(professors.map((professor) => professor.university))]
   const subjects = [...new Set(professors.flatMap((professor) => professor.subjects))].sort()
@@ -49,7 +51,7 @@ export default function Professors() {
 
       <div className="card p-4 md:p-5 mb-8 grid md:grid-cols-2 lg:grid-cols-4 gap-3">
         <input value={professorFilters.query} onChange={(event) => dispatch(setProfessorFilters({ query: event.target.value }))} placeholder="Search professors, subjects..." aria-label="Search professors" className="h-11 rounded-lg border border-line px-3 text-sm outline-none focus:border-brass" />
-        <select value={professorFilters.subject || ''} onChange={(event) => dispatch(setProfessorFilters({ subject: event.target.value || null }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="">All subjects</option>{subjects.map((subject) => <option key={subject}>{subject}</option>)}</select>
+        <select value={activeSubject || ''} onChange={(event) => { dispatch(setProfessorFilters({ subject: event.target.value || null })); setSearchParams((current) => { const next = new URLSearchParams(current); next.delete('subject'); return next }) }} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="">All subjects</option>{[...new Set([...subjects, ...(activeSubject ? [activeSubject] : [])])].sort().map((subject) => <option key={subject}>{subject}</option>)}</select>
         <select value={professorFilters.university || ''} onChange={(event) => dispatch(setProfessorFilters({ university: event.target.value || null }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="">All universities</option>{universities.map((university) => <option key={university}>{university}</option>)}</select>
         <select value={professorFilters.guidance || ''} onChange={(event) => dispatch(setProfessorFilters({ guidance: event.target.value || null }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="">All guidance types</option>{guidanceTypes.map((guidance) => <option key={guidance}>{guidance}</option>)}</select>
         <select value={professorFilters.language || ''} onChange={(event) => dispatch(setProfessorFilters({ language: event.target.value || null }))} className="h-11 rounded-lg border border-line px-3 text-sm bg-white"><option value="">All languages</option>{languages.map((language) => <option key={language}>{language}</option>)}</select>
