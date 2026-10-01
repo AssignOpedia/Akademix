@@ -5,6 +5,7 @@ import SearchBar from '../../components/Search/SearchBar';
 import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar';
 import { subjectCategories as appSubjectCategories, allSubjects } from '../../data/subjects';
 import { universities as appUniversities } from '../../data/universities';
+import { getUniversityCampusImage, getUniversityCampusPhoto } from '../../data/universityImages';
 import AnalyticsDashboard from '../../components/AnalyticsDashboard/AnalyticsDashboard';
 import Testimonials from '../../components/AnalyticsDashboard/Testimonials/Testimonials';
 import { mentorProfiles } from '../../data/mentors';
@@ -27,6 +28,23 @@ import {
   Lightbulb,
   PlayCircle,
 } from 'lucide-react';
+
+function getSubjectBookIcon(subjectName) {
+  const name = subjectName.toLowerCase()
+  if (/math/.test(name)) return '∑'
+  if (/physics/.test(name)) return '⚛'
+  if (/chem/.test(name)) return '⚗'
+  if (/bio|nurs|dent|health|pharmacy/.test(name)) return '🧬'
+  if (/english|language|linguistic|writing|literature/.test(name)) return '✒'
+  if (/history|political|law/.test(name)) return '⚖'
+  if (/geograph|environment|ecology/.test(name)) return '🌿'
+  if (/econom|finance|account|business|marketing/.test(name)) return '↗'
+  if (/psych/.test(name)) return '◉'
+  if (/computer|software|web|cyber|data|network|engineering|technology/.test(name)) return '⌘'
+  if (/design|graphic|architecture/.test(name)) return '✦'
+  if (/sociology/.test(name)) return '◎'
+  return '✦'
+}
 
 function AnimatedStat({ value, suffix = '', decimals = 0 }) {
   const [count, setCount] = useState(0)
@@ -75,7 +93,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAllSubjects, setShowAllSubjects] = useState(false);
-
   // Use the same catalogue as the directory pages so every subject link resolves.
   const homeSubjectCategories = appSubjectCategories.map((category) => ({
     category: category.name,
@@ -93,10 +110,10 @@ export default function Home() {
   const visibleSubjects = normalizedSubjectQuery || showAllSubjects
     ? filteredSubjects
     : filteredSubjects.slice(0, 12);
-  const homeUniversities = appUniversities.slice(0, 6).map((university, index) => ({
+  const homeUniversities = appUniversities.slice(0, 6).map((university) => ({
     ...university,
     location: `${university.city}, ${university.country}`,
-    rank: `Featured ${String(index + 1).padStart(2, '0')}`,
+    image: getUniversityCampusPhoto(university.id),
     students: 'Explore profile',
   }));
 
@@ -336,7 +353,7 @@ export default function Home() {
 
           {visibleSubjects.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleSubjects.map((subject) => (
+              {visibleSubjects.map((subject, index) => (
                 <button
                   type="button"
                   key={subject.slug}
@@ -344,14 +361,21 @@ export default function Home() {
               className="group relative overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-white/95 via-amber-50/85 to-rose-50/75 p-7 text-left shadow-xl shadow-stone-300/40 transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400/70 hover:from-white hover:via-amber-50 hover:to-rose-50 hover-lift card-anim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
                 >
                   <div className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-bl-full bg-amber-500/5 transition-transform duration-500 group-hover:scale-125" />
-                  <span className="badge-pop mb-4 inline-block rounded-full border border-amber-500/20 bg-amber-500/10 px-3.5 py-1.5 text-xs font-bold text-amber-800">
+                  <span aria-hidden="true" className="subject-book-float pointer-events-none absolute right-6 top-5 z-10 block h-[4.5rem] w-14 transition-transform duration-500 group-hover:[transform:perspective(500px)_rotateY(-20deg)_rotateZ(-5deg)_translateY(-5px)]" style={{ animationDelay: `${(index % 5) * -0.35}s` }}>
+                    <span className="subject-book-cover flex h-full flex-col items-center justify-center gap-1 rounded-r-md border-l-[5px] border-white/35 px-1.5 text-white shadow-lg">
+                      <span className="text-xl font-semibold leading-none drop-shadow-sm">{getSubjectBookIcon(subject.name)}</span>
+                      <span className="w-full truncate text-center text-[7px] font-bold uppercase tracking-wide opacity-90">{subject.name}</span>
+                      <span className="h-px w-5/6 bg-white/60" />
+                    </span>
+                  </span>
+                  <span className="badge-pop mb-4 inline-block max-w-[calc(100%-4.5rem)] truncate rounded-full border border-amber-500/20 bg-amber-500/10 px-3.5 py-1.5 text-xs font-bold text-amber-800">
                     {subject.category}
                   </span>
-                  <span className="mb-2 flex items-center justify-between gap-3 font-serif text-xl text-slate-900 transition-colors group-hover:text-amber-700">
+                  <span className="mb-2 flex items-center justify-between gap-3 pr-14 font-serif text-xl text-slate-900 transition-colors group-hover:text-amber-700">
                     {subject.name}
                     <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-stone-500 transition-all group-hover:translate-x-1.5 group-hover:text-amber-700" />
                   </span>
-                  <span className="block text-sm text-slate-700">Explore related courses, professors, universities, and career paths.</span>
+                  <span className="block pr-10 text-sm text-slate-700">Explore related courses, professors, universities, and career paths.</span>
                 </button>
               ))}
             </div>
@@ -438,13 +462,25 @@ export default function Home() {
                 onClick={() => navigate(`/universities/${u.id}`)}
                 className="group p-7 rounded-3xl bg-gradient-to-br from-white/95 via-amber-50/85 to-rose-50/75 backdrop-blur-xl border border-amber-200/70 hover:border-amber-400/70 hover:from-white hover:via-amber-50 hover:to-rose-50 transition-all duration-300 cursor-pointer shadow-xl shadow-stone-300/40 relative overflow-hidden hover-tilt card-anim"
               >
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-200 border border-stone-300 flex items-center justify-center font-serif text-amber-700 text-lg shadow-inner icon-pop">
-                    <Globe className="w-6 h-6 text-amber-700" />
+                <div className="relative mb-5 h-40 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-200 via-amber-100 to-rose-100">
+                  <img
+                    src={u.image.url}
+                    alt="University campus building"
+                    loading="lazy"
+                    onError={(event) => {
+                      if (event.currentTarget.dataset.fallbackApplied) {
+                        event.currentTarget.style.display = 'none'
+                        return
+                      }
+                      event.currentTarget.dataset.fallbackApplied = 'true'
+                      event.currentTarget.src = getUniversityCampusImage(u.id)
+                    }}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-slate-950/10" />
+                  <div className="absolute inset-x-4 bottom-3 flex items-end justify-between">
+                    <Globe aria-hidden="true" className="h-6 w-6 text-white drop-shadow" />
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-bold">
-                    {u.rank}
-                  </span>
                 </div>
                 <h3 className="text-xl font-serif text-slate-900 mb-2 group-hover:text-amber-700 transition-colors">{u.name}</h3>
                 <p className="text-xs text-slate-600 mb-6 flex items-center gap-1.5 font-semibold">

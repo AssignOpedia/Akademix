@@ -1,0 +1,338 @@
+{
+  "uni-us-mit": {
+    "url": "/university-images/uni-us-mit.jpg",
+    "source": "https://cdn.britannica.com/85/13085-050-C2E88389/Corpus-Christi-College-University-of-Cambridge-England.jpg",
+    "artist": "Ingolfson",
+    "license": "Public domain"
+  },
+  "uni-us-princeton": {
+    "url": "/university-images/uni-us-princeton.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ANew_building_for_University_Campus_Suffolk_-_geograph.org.uk_-_1294356.jpg",
+    "artist": "Oxymoron",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-us-harvard": {
+    "url": "/university-images/uni-us-harvard.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABuilding_starting_on_new_university_campus_-_geograph.org.uk_-_1323546.jpg",
+    "artist": "DS Pugh",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-us-yale": {
+    "url": "/university-images/uni-us-yale.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ANew_University_campus_building_-_geograph.org.uk_-_1468234.jpg",
+    "artist": "Andrew Hill",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-us-caltech": {
+    "url": "/university-images/uni-us-caltech.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACampus_WU_EA_DSC_1571w.jpg",
+    "artist": "P e z i",
+    "license": "CC BY-SA 3.0"
+  },
+  "uni-us-stanford": {
+    "url": "/university-images/uni-us-stanford.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACampus_WU_EA_DSC_1537w.jpg",
+    "artist": "P e z i",
+    "license": "CC BY-SA 3.0 at"
+  },
+  "uni-ca-toronto": {
+    "url": "/university-images/uni-ca-toronto.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACloseup_on_Physics_Building_on_Campus_Riedberg%2C_Goethe_University_Frankfurt.jpg",
+    "artist": "Sven",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-ca-ubc": {
+    "url": "/university-images/uni-ca-ubc.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3APhysics_Building_on_Campus_Riedberg%2C_Goethe_University_Frankfurt.jpg",
+    "artist": "Sven",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-ca-mcgill": {
+    "url": "/university-images/uni-ca-mcgill.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_05.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-ca-alberta": {
+    "url": "/university-images/uni-ca-alberta.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_06.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-ca-mcmaster": {
+    "url": "/university-images/uni-ca-mcmaster.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_11.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-au-melbourne": {
+    "url": "/university-images/uni-au-melbourne.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_18.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-au-sydney": {
+    "url": "/university-images/uni-au-sydney.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_17.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-au-monash": {
+    "url": "/university-images/uni-au-monash.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_19.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-au-anu": {
+    "url": "/university-images/uni-au-anu.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABuilding_at_Lincoln_University_Campus%2C_New_Zealand_21.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-au-unsw": {
+    "url": "/university-images/uni-au-unsw.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALandscape_Architecture_Building%2C_Lincoln_University_Campus%2C_New_Zealand_22.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-nz-auckland": {
+    "url": "/university-images/uni-nz-auckland.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACommerce_Building%2C_Lincoln_University_Campus%2C_New_Zealand_28.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-nz-otago": {
+    "url": "/university-images/uni-nz-otago.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACommerce_Building%2C_Lincoln_University_Campus%2C_New_Zealand_05.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-nz-victoria-wellington": {
+    "url": "/university-images/uni-nz-victoria-wellington.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACommerce_Building%2C_Lincoln_University_Campus%2C_New_Zealand_07.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-nz-canterbury": {
+    "url": "/university-images/uni-nz-canterbury.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAlpine_Club_Building%2C_Lincoln_University_Campus%2C_New_Zealand.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-nz-massey": {
+    "url": "/university-images/uni-nz-massey.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACommerce_Building%2C_Lincoln_University_Campus%2C_New_Zealand_35.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-gb-oxford": {
+    "url": "/university-images/uni-gb-oxford.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_04.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-gb-imperial": {
+    "url": "/university-images/uni-gb-imperial.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building_-_detail%2C_Lincoln_University_Campus%2C_New_Zealand_09.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-de-tum": {
+    "url": "/university-images/uni-de-tum.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_08.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-de-lmu-munich": {
+    "url": "/university-images/uni-de-lmu-munich.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_11.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-de-heidelberg": {
+    "url": "/university-images/uni-de-heidelberg.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_10.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-de-humboldt-berlin": {
+    "url": "/university-images/uni-de-humboldt-berlin.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_19.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-de-free-berlin": {
+    "url": "/university-images/uni-de-free-berlin.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_20.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-fr-institut-polytechnique-paris": {
+    "url": "/university-images/uni-fr-institut-polytechnique-paris.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurns_Building%2C_Lincoln_University_Campus%2C_New_Zealand_21.jpg",
+    "artist": "Michal Klajban",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-fr-paris-saclay": {
+    "url": "/university-images/uni-fr-paris-saclay.png",
+    "source": "https://commons.wikimedia.org/wiki/File%3AThe_Horizon_building_of_Breda_University_of_Applied_Sciences.png",
+    "artist": "BookieWookieRookie",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-fr-sorbonne": {
+    "url": "/university-images/uni-fr-sorbonne.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AThe_Frontier_building_of_Breda_University_of_Applied_Sciences.jpg",
+    "artist": "BookieWookieRookie",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-fr-paris-cite": {
+    "url": "/university-images/uni-fr-paris-cite.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAmerican_University_of_Barbados_Campus_Building.jpg",
+    "artist": "AUBMED",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-fr-ens": {
+    "url": "/university-images/uni-fr-ens.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACampus_of_Ministry_of_Interior_University%2C_Moscow.jpg",
+    "artist": "Lev.Borisovitch",
+    "license": "CC0"
+  },
+  "uni-fr-psl": {
+    "url": "/university-images/uni-fr-psl.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AWaterfront_Building%2C_University_Campus_Suffolk_-_geograph.org.uk_-_4232321.jpg",
+    "artist": "N Chadwick",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-nl-delft": {
+    "url": "/university-images/uni-nl-delft.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AWaterfront_Building%2C_University_Campus_Suffolk_-_geograph.org.uk_-_4232324.jpg",
+    "artist": "N Chadwick",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-nl-amsterdam": {
+    "url": "/university-images/uni-nl-amsterdam.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AWaterfront_Building%2C_University_Campus_Suffolk_-_geograph.org.uk_-_4232353.jpg",
+    "artist": "N Chadwick",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-jp-tokyo": {
+    "url": "/university-images/uni-jp-tokyo.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AUniversity_of_Worcester_City_Campus_building_-_geograph.org.uk_-_4282835.jpg",
+    "artist": "Jaggery",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-jp-kyoto": {
+    "url": "/university-images/uni-jp-kyoto.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AUniversity_of_Worcester_City_Campus_building_-_geograph.org.uk_-_4536678.jpg",
+    "artist": "Jaggery",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-sg-nus": {
+    "url": "/university-images/uni-sg-nus.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABurton_Hall%2C_University_of_Minnesota%2C_Minneapolis_Campus%2C_1901.jpg",
+    "artist": "Unknown",
+    "license": "Public domain"
+  },
+  "uni-sg-ntu": {
+    "url": "/university-images/uni-sg-ntu.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAbandoned_campus_of_Black_Sea_University._Far_view._Kakheti_highway.jpg",
+    "artist": "David Osipov 0000 0005 1802 960X 0009-0005-2713-9242",
+    "license": "CC BY 4.0"
+  },
+  "uni-sg-smu": {
+    "url": "/university-images/uni-sg-smu.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAbandoned_campus_of_Black_Sea_University._Close_view._Kakheti_highway.jpg",
+    "artist": "David Osipov 0000 0005 1802 960X 0009-0005-2713-9242",
+    "license": "CC BY 4.0"
+  },
+  "uni-kr-snu": {
+    "url": "/university-images/uni-kr-snu.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ATokai_University_Isehara_Campus_Building_No._3.jpg",
+    "artist": "Mzaki",
+    "license": "CC0"
+  },
+  "uni-kr-kaist": {
+    "url": "/university-images/uni-kr-kaist.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ATokai_University_Isehara_Campus_Building_No._2.jpg",
+    "artist": "Mzaki",
+    "license": "CC0"
+  },
+  "uni-ae-uaeu": {
+    "url": "/university-images/uni-ae-uaeu.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ABuilding_northern_part_of_the_campus_of_Qinghai_University_for_Nationalities_(2025).jpg",
+    "artist": "Michał Beim",
+    "license": "CC BY 4.0"
+  },
+  "uni-ae-khalifa": {
+    "url": "/university-images/uni-ae-khalifa.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ASanno_University_Shonan_Campus_Research_Building.jpg",
+    "artist": "Mzaki",
+    "license": "CC0"
+  },
+  "uni-om-squ": {
+    "url": "/university-images/uni-om-squ.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AYork_University_Markham_Campus_Building_Front_Entrance.jpg",
+    "artist": "Liedward390",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-om-nizwa": {
+    "url": "/university-images/uni-om-nizwa.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AUniversity_Boulevard%2C_Markham_Campus_Building_of_York_University.jpg",
+    "artist": "Liedward390",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-bh-bahrain": {
+    "url": "/university-images/uni-bh-bahrain.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AAcademic_City_University_campus_building_illuminated_at_dusk.jpg",
+    "artist": "Afrank4436",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-bh-arabian-gulf": {
+    "url": "/university-images/uni-bh-arabian-gulf.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ALloyd_Building_at_Adelaide_University's_City_West_campus_in_September_2026_(028A1024).jpg",
+    "artist": "Yu Chu Chin",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-bh-ahlia": {
+    "url": "/university-images/uni-bh-ahlia.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACatherine_Helen_Spence_Building_at_Adelaide_University's_City_West_campus_(028A1019).jpg",
+    "artist": "Yu Chu Chin",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-om-sohar": {
+    "url": "/university-images/uni-om-sohar.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AUniversity_of_Northumbria_Campus_Building_-_geograph.org.uk_-_55505.jpg",
+    "artist": "C G Burke",
+    "license": "CC BY-SA 2.0"
+  },
+  "uni-pl-warsaw": {
+    "url": "/university-images/uni-pl-warsaw.JPG",
+    "source": "https://commons.wikimedia.org/wiki/File%3AUniversity_of_Tokyo_-_Komaba_Campus_-_Building_1.JPG",
+    "artist": "user Tyuukyuueigo on the English Wikipedia",
+    "license": "CC BY-SA 3.0"
+  },
+  "uni-pl-jagiellonian": {
+    "url": "/university-images/uni-pl-jagiellonian.JPG",
+    "source": "https://commons.wikimedia.org/wiki/File%3ARutgers_University_Livingston_campus_building_with_flags.JPG",
+    "artist": "Tomwsulcer",
+    "license": "CC0"
+  },
+  "uni-pl-warsaw-tech": {
+    "url": "/university-images/uni-pl-warsaw-tech.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AThe_Third_Teaching_Building_in_Zhejiang_University_Yuquan_Campus_01_2017-10.jpg",
+    "artist": "猫猫的日记本",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-za-cape-town": {
+    "url": "/university-images/uni-za-cape-town.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3ACampus_building%2C_University_of_Sussex.jpg",
+    "artist": "Ak689",
+    "license": "CC BY-SA 4.0"
+  },
+  "uni-za-wits": {
+    "url": "/university-images/uni-za-wits.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File%3AKomaba_I_Campus_Building_101_-_University_of_Tokyo.jpg",
+    "artist": "Kakidai",
+    "license": "CC BY-SA 4.0"
+  }
+}

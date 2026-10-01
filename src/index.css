@@ -374,6 +374,21 @@ button:disabled {
   to { background-position: 64px 64px, 64px 64px; }
 }
 
+@keyframes subject-book-bob {
+  0%, 100% { translate: 0 0; rotate: 3deg; }
+  50% { translate: 0 -5px; rotate: -2deg; }
+}
+
+.subject-book-float {
+  animation: subject-book-bob 3.8s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.subject-book-cover {
+  background: linear-gradient(145deg, #7771df, #5047b4 72%, #403985);
+  box-shadow: inset 2px 0 0 rgb(255 255 255 / 22%), inset -3px 0 0 rgb(24 20 74 / 16%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

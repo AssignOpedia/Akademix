@@ -1,7 +1,8 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Search } from 'lucide-react'
 import { universities } from '../../data/universities'
+import { getUniversityCampusPhoto } from '../../data/universityImages'
 import { countries } from '../../data/countries'
 import { professors } from '../../data/professors'
 import UniversityCard from '../../components/UniversityCard/UniversityCard'
@@ -14,7 +15,6 @@ export default function Universities() {
   const [searchParams] = useSearchParams()
   const [country, setCountry] = useState(null)
   const [query, setQuery] = useState(() => searchParams.get('subject') || '')
-
   if (id) {
     const university = universities.find((item) => item.id === id)
     if (!university) return <Navigate to="/universities" replace />
@@ -46,7 +46,7 @@ export default function Universities() {
       <div className="flex flex-wrap gap-2 mb-10"><button onClick={() => setCountry(null)} className={`rounded-full border px-4 py-2 text-sm ${!country ? 'border-brass bg-brass/5' : 'border-line text-slate hover:text-ink'}`}>All countries</button>{countries.map((c) => <button key={c.code} onClick={() => setCountry(c.code)} className={`rounded-full border px-4 py-2 text-sm ${country === c.code ? 'border-brass bg-brass/5' : 'border-line text-slate hover:text-ink'}`}><span className="inline-flex items-center gap-2"><CountryFlag country={c} /> {c.name}</span></button>)}</div>
       <div className="relative mb-5 max-w-md"><Search aria-hidden="true" size={17} className="absolute left-3.5 top-3.5 text-slate" /><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by university, city, subject..." aria-label="Search universities" className="h-11 w-full rounded-lg border border-line bg-white pl-10 pr-3 text-sm outline-none focus:border-brass" /></div>
       <p className="mb-4 text-sm text-slate" aria-live="polite">{filtered.length} universit{filtered.length === 1 ? 'y' : 'ies'} found</p>
-      {filtered.length ? <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{filtered.map((u) => <UniversityCard key={u.id} university={u} />)}</div> : <div className="card p-8 text-center"><p className="font-display text-xl text-ink">No universities match these filters.</p><button type="button" onClick={() => { setCountry(null); setQuery('') }} className="btn-secondary mt-5">Clear filters</button></div>}
+      {filtered.length ? <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{filtered.map((u) => <UniversityCard key={u.id} university={u} campusImage={getUniversityCampusPhoto(u.id)} />)}</div> : <div className="card p-8 text-center"><p className="font-display text-xl text-ink">No universities match these filters.</p><button type="button" onClick={() => { setCountry(null); setQuery('') }} className="btn-secondary mt-5">Clear filters</button></div>}
     </div>
   )
 }
