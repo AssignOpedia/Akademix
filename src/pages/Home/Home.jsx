@@ -5,6 +5,7 @@ import SearchBar from '../../components/Search/SearchBar';
 import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar';
 import { subjectCategories as appSubjectCategories, allSubjects } from '../../data/subjects';
 import { universities as appUniversities } from '../../data/universities';
+import AnalyticsDashboard from '../../components/AnalyticsDashboard/AnalyticsDashboard';
 import { mentorProfiles } from '../../data/mentors';
 import {
   GraduationCap,
@@ -286,35 +287,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Journey / Steps */}
-      <section className="relative z-10 py-24 border-t border-stone-300/60 bg-white/40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-3 block">Your Academic Journey</span>
-            <h2 className="font-serif text-3xl sm:text-5xl text-slate-900">Designed for clarity, built for excellence.</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { step: '01', title: 'Diagnostic Mapping', desc: 'We analyze your current academic standing, target universities, and knowledge gaps through our AI-assisted diagnostic.' },
-              { step: '02', title: 'Professor Matching', desc: 'Paired with a dedicated subject expert who holds a PhD or advanced degree from a top-tier global institution.' },
-              { step: '03', title: 'Milestone Mastery', desc: 'Structured 1-to-1 live sessions, rigorous assignment guidance, and portfolio refinement leading to guaranteed breakthroughs.' }
-            ].map((item, index) => (
-              <div 
-                key={index} 
-                className="relative group p-8 rounded-3xl bg-gradient-to-br from-white/95 via-amber-50/85 to-rose-50/75 border border-amber-200/70 hover:border-amber-400/70 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 overflow-hidden shadow-lg hover-tilt card-anim"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center font-bold text-lg mb-6 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm icon-pop">
-                  {item.step}
-                </div>
-                <h3 className="text-xl font-serif text-slate-900 mb-3 group-hover:text-amber-700 transition-colors">{item.title}</h3>
-                <p className="text-slate-700 text-sm leading-relaxed relative z-10">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+         <AnalyticsDashboard />
 
       {/* Subjects */}
       <section id="subjects" className="relative z-10 py-24 border-t border-stone-300/60">
