@@ -17,15 +17,17 @@ const GOALS = [
   { l: 'Career readiness', v: 8, c: '#059669' },
 ];
 
-// [month, new students that month]
-const ENROL = [
-  ['Jan', 310], ['Feb', 260], ['Mar', 280], ['Apr', 340], ['May', 420], ['Jun', 380],
-  ['Jul', 240], ['Aug', 330], ['Sep', 450], ['Oct', 520], ['Nov', 480], ['Dec', 300],
+// [year, total students]
+const GROWTH = [
+  ['2022', 180],
+  ['2023', 420],
+  ['2024', 760],
+  ['2025', 1100],
+  ['2026', 1400],
 ];
-const ENROL_LABEL_AT = [0, 2, 4, 6, 8, 10]; // which points get a month label underneath
-const Y_MIN = 200;
-const Y_MAX = 600;
-const GRID = [300, 400, 500];
+const Y_MIN = 0;
+const Y_MAX = 1600;
+const GRID = [400, 800, 1200];
 
 const RINGS = [
   { l: 'Student retention', v: 92 },
@@ -33,6 +35,38 @@ const RINGS = [
   { l: 'Would recommend', v: 96 },
 ];
 /* ================================= */
+
+/* smooth curve through points (monotone cubic: smooth, never overshoots the data) */
+function smoothPath(pts) {
+  const n = pts.length;
+  if (n < 3) return `M${pts.map((p) => p.join(',')).join(' L')}`;
+  const dx = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) {
+    dx[i] = pts[i + 1][0] - pts[i][0];
+    m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i];
+  }
+  t[0] = m[0];
+  t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], s = a * a + b * b;
+    if (s > 9) {
+      const k = 3 / Math.sqrt(s);
+      t[i] = k * a * m[i];
+      t[i + 1] = k * b * m[i];
+    }
+  }
+  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, y0] = pts[i];
+    const [x1, y1] = pts[i + 1];
+    const c1x = x0 + dx[i] / 3, c1y = y0 + (t[i] * dx[i]) / 3;
+    const c2x = x1 - dx[i] / 3, c2y = y1 - (t[i + 1] * dx[i]) / 3;
+    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
+  }
+  return d;
+}
 
 /* true while the element is on screen, false when it leaves (so animations restart) */
 function useInView(threshold = 0.3) {
@@ -78,12 +112,15 @@ function Card({ title, className = '', children }) {
 
 export default function AnalyticsDashboard() {
   /* line chart geometry */
-  const n = ENROL.length;
-  const xs = (i) => 26 + (i / (n - 1)) * 264;
+  const n = GROWTH.length;
+  const xs = (i) => 30 + (i / (n - 1)) * 250;
   const ys = (v) => 105 - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * 85;
-  const pts = ENROL.map(([, v], i) => `${xs(i).toFixed(1)},${ys(v).toFixed(1)}`);
-  const peakIdx = ENROL.reduce((best, [, v], i) => (v > ENROL[best][1] ? i : best), 0);
-  const peakMonth = ENROL[peakIdx][0];
+  const points = GROWTH.map(([, v], i) => [xs(i), ys(v)]);
+  const linePath = smoothPath(points);
+  const areaPath = `${linePath} L${xs(n - 1).toFixed(1)},105 L${xs(0).toFixed(1)},105 Z`;
+  const first = GROWTH[0];
+  const last = GROWTH[n - 1];
+  const fmt = (v) => v.toLocaleString('en-US');
 
   /* donut geometry */
   let offset = 0;
@@ -127,13 +164,17 @@ export default function AnalyticsDashboard() {
         .adb-leg i{width:10px;height:10px;border-radius:3px;flex:none}
 
         /* line chart: slow draw, restarts each time it scrolls into view */
-        .adb-lp{fill:none;stroke:#d97706;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
+        .adb-lp{fill:none;stroke:#d97706;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
           stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 5px rgba(217,119,6,.5))}
         .adb-card.in .adb-lp{animation:adbDraw 4.5s cubic-bezier(.4,0,.2,1) forwards}
         .adb-la{opacity:0}
         .adb-card.in .adb-la{animation:adbFade 1.6s 3s ease forwards}
         .adb-pk{fill:#d97706;opacity:0}
         .adb-card.in .adb-pk{animation:adbFade .6s 4.2s ease forwards,adbBlink 1.6s 4.8s infinite}
+        .adb-dot{fill:#fff;stroke:#d97706;stroke-width:2;opacity:0}
+        .adb-card.in .adb-dot{animation:adbFade .5s 4s ease forwards}
+        .adb-vl{fill:#0f172a;font-size:8.5px;font-weight:800;opacity:0}
+        .adb-card.in .adb-vl{animation:adbFade .6s 4s ease forwards}
         .adb-txt{fill:#64748b;font-size:8px;font-weight:600}
         @keyframes adbDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
         @keyframes adbFade{from{opacity:0}to{opacity:1}}
@@ -154,9 +195,9 @@ export default function AnalyticsDashboard() {
         @media(max-width:640px){.adb-bars{gap:8px;height:220px}.adb-bar b{font-size:14px}}
         @media(prefers-reduced-motion:reduce){
           .adb-bar i,.adb-sg,.adb-rp{transition:none!important}
-          .adb-lp,.adb-la,.adb-pk{animation:none!important}
+          .adb-lp,.adb-la,.adb-pk,.adb-dot,.adb-vl{animation:none!important}
           .adb-card.in .adb-lp{stroke-dashoffset:0}
-          .adb-card.in .adb-la,.adb-card.in .adb-pk{opacity:1}
+          .adb-card.in .adb-la,.adb-card.in .adb-pk,.adb-card.in .adb-dot,.adb-card.in .adb-vl{opacity:1}
         }
       `}</style>
 
@@ -211,8 +252,8 @@ export default function AnalyticsDashboard() {
             </div>
           </Card>
 
-          {/* Line chart: new students each month (replaces Busiest hours) */}
-          <Card title="New students each month">
+          {/* Line chart: students joined 2022 to 2026 */}
+          <Card title="Students joined, 2022 to 2026">
             <svg viewBox="0 0 300 124" className="w-full" aria-hidden="true">
               <defs>
                 <linearGradient id="adbArea" x1="0" y1="0" x2="0" y2="1">
@@ -224,25 +265,39 @@ export default function AnalyticsDashboard() {
               {GRID.map((g) => (
                 <g key={g}>
                   <line
-                    x1="26" x2="290" y1={ys(g)} y2={ys(g)}
+                    x1="30" x2="290" y1={ys(g)} y2={ys(g)}
                     stroke="rgba(15,23,42,.08)" strokeDasharray="3 4"
                   />
-                  <text className="adb-txt" x="0" y={ys(g) + 3}>{g}</text>
+                  <text className="adb-txt" x="0" y={ys(g) + 3}>{fmt(g)}</text>
                 </g>
               ))}
 
-              <polygon className="adb-la" fill="url(#adbArea)" points={`26,105 ${pts.join(' ')} 290,105`} />
-              <path className="adb-lp" pathLength="1" d={`M${pts.join(' L')}`} />
-              <circle className="adb-pk" cx={xs(peakIdx)} cy={ys(ENROL[peakIdx][1])} r="4" />
+              <path className="adb-la" fill="url(#adbArea)" d={areaPath} />
+              <path className="adb-lp" pathLength="1" d={linePath} />
 
-              {ENROL_LABEL_AT.map((i) => (
-                <text key={ENROL[i][0]} className="adb-txt" x={xs(i)} y="120" textAnchor="middle">
-                  {ENROL[i][0]}
+              {GROWTH.slice(0, -1).map(([yr, v], i) => (
+                <circle key={yr} className="adb-dot" cx={xs(i)} cy={ys(v)} r="3" />
+              ))}
+              <circle className="adb-pk" cx={xs(n - 1)} cy={ys(last[1])} r="4" />
+
+              {GROWTH.map(([yr, v], i) => (
+                <text
+                  key={yr}
+                  className="adb-vl"
+                  x={i === n - 1 ? xs(i) + 8 : xs(i)}
+                  y={ys(v) - 8}
+                  textAnchor={i === n - 1 ? 'end' : 'middle'}
+                >
+                  {fmt(v)}
                 </text>
+              ))}
+
+              {GROWTH.map(([yr], i) => (
+                <text key={yr} className="adb-txt" x={xs(i)} y="120" textAnchor="middle">{yr}</text>
               ))}
             </svg>
             <p className="mt-2 text-sm font-semibold text-slate-700">
-              Peaks in {peakMonth}, as application deadlines and exams approach.
+              From {fmt(first[1])} students in {first[0]} to {fmt(last[1])} in {last[0]}.
             </p>
           </Card>
 

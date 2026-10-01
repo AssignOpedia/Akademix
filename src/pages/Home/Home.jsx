@@ -6,6 +6,7 @@ import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar';
 import { subjectCategories as appSubjectCategories, allSubjects } from '../../data/subjects';
 import { universities as appUniversities } from '../../data/universities';
 import AnalyticsDashboard from '../../components/AnalyticsDashboard/AnalyticsDashboard';
+import Testimonials from '../../components/AnalyticsDashboard/Testimonials/Testimonials';
 import { mentorProfiles } from '../../data/mentors';
 import {
   GraduationCap,
@@ -540,7 +541,7 @@ export default function Home() {
         </div>
       </section>
 
-     
+     {/*
       <section className="relative z-10 py-24 border-t border-stone-300/60 bg-gradient-to-b from-white/60 to-stone-100/60 text-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl sm:text-5xl text-slate-900 mb-6">
@@ -557,8 +558,9 @@ export default function Home() {
           </button>
         </div>
       </section>
-
-
+      */}
+      <Testimonials />
+      
 
     </div>
   );
