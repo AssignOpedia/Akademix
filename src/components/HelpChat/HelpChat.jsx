@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bot, RotateCcw, Send, X } from 'lucide-react'
 import { allSubjects } from '../../data/subjects'
+import assistantAvatar from './image.png'
 
 const suggestions = [
   'How do I plan an assignment?',
@@ -122,7 +123,7 @@ export default function HelpChat() {
         >
           <header className="flex items-center justify-between bg-gradient-to-r from-indigo-700 to-violet-700 px-4 py-3 text-white">
             <div className="flex items-center gap-3">
-              <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/30 bg-white/15 text-white shadow-inner"><Bot size={21} /></span>
+              <img src={assistantAvatar} alt="" className="h-10 w-10 rounded-full border-2 border-white/30 object-cover shadow-inner" />
               <div>
                 <p className="font-medium">Akademix Assistant</p>
                 <p className="text-xs text-white/80">Here to help you find your way</p>
@@ -142,9 +143,7 @@ export default function HelpChat() {
             {messages.map((message) => (
               <div key={message.id} className={`flex flex-col ${message.from === 'user' ? 'items-end' : 'items-start'}`}>
                 {message.from === 'assistant' && (
-                  <span aria-hidden="true" className="mb-1 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200">
-                    <Bot size={15} />
-                  </span>
+                  <img src={assistantAvatar} alt="" className="mb-1 h-7 w-7 rounded-full object-cover ring-1 ring-indigo-200" />
                 )}
                 <p className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${message.from === 'user' ? 'rounded-br-md bg-ink text-white' : 'rounded-bl-md border border-stone-200 bg-white text-ink'}`}>
                   {message.text}
@@ -177,7 +176,7 @@ export default function HelpChat() {
       )}
 
       <button type="button" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close help chat' : 'Open help chat'} aria-expanded={open} className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-violet-700 text-white shadow-xl shadow-indigo-900/25 transition-transform hover:scale-105 hover:from-indigo-700 hover:to-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-        {open ? <X size={22} /> : <Bot size={24} />}
+        {open ? <X size={22} /> : <img src={assistantAvatar} alt="" className="h-14 w-14 rounded-full object-cover" />}
       </button>
     </div>
   )
