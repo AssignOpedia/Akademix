@@ -13,6 +13,7 @@ import CareerGuidance from '../pages/CareerGuidance/CareerGuidance'
 import About from '../pages/About/About'
 import AssignmentGuidance from '../pages/AssignmentGuidance/AssignmentGuidance'
 import Profile from '../pages/Profile/Profile'
+import Blogs from '../pages/Blogs/Blogs'
 
 export default function AppRoutes() {
   return (
@@ -34,6 +35,7 @@ export default function AppRoutes() {
       <Route path="/assignment-guidance" element={<AssignmentGuidance />} />
       <Route path="/career-guidance" element={<CareerGuidance />} />
       <Route path="/about" element={<About />} />
+      <Route path="/blogs" element={<Blogs />} />
       <Route path="*" element={<Home />} />
     </Routes>
   )

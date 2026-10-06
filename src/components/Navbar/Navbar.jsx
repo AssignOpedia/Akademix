@@ -11,6 +11,7 @@ const links = [
   { to: '/countries', label: 'Countries' },
   { to: '/mentoring', label: 'Mentoring' },
   { to: '/career-guidance', label: 'Career Guidance' },
+  { to: '/blogs', label: 'Blogs' },
   { to: '/about', label: 'About' },
 ]
 
@@ -38,7 +39,7 @@ async function hashPassword(password, salt) {
 }
 
 function saveSignedInSession(user) {
-  const session = { name: user.name, email: user.email }
+  const session = { name: user.name, email: user.email, role: user.role || 'Student' }
   localStorage.setItem(sessionStorageKey, JSON.stringify(session))
   localStorage.setItem('akademix-student-profile', JSON.stringify(session))
   return session
@@ -67,6 +68,8 @@ export default function Navbar() {
   const [profileName, setProfileName] = useState(profile?.name || '')
   const [profileEmail, setProfileEmail] = useState(profile?.email || '')
   const [password, setPassword] = useState('')
+  const [authorRole, setAuthorRole] = useState('Student')
+  const [authDestination, setAuthDestination] = useState('/profile')
 
   useEffect(() => {
     const syncSession = () => {
@@ -76,11 +79,12 @@ export default function Navbar() {
         setCurrentUser(null)
       }
     }
-    const openAuth = () => {
+    const openAuth = (event) => {
       setAuthMode('login')
       setAuthNotice('')
       setPassword('')
       setProfileEmail(profile?.email || '')
+      setAuthDestination(event.detail?.redirectTo || '/profile')
       setProfileOpen(true)
     }
     window.addEventListener('akademix-auth-change', syncSession)
@@ -96,6 +100,7 @@ export default function Navbar() {
     setAuthNotice('')
     setPassword('')
     setProfileEmail(profile?.email || '')
+    setAuthDestination('/profile')
     setProfileOpen(true)
   }
 
@@ -117,6 +122,7 @@ export default function Navbar() {
           email,
           salt: bytesToHex(salt),
           passwordHash: await hashPassword(password, salt),
+          role: authorRole,
         }
         localStorage.setItem(accountStorageKey, JSON.stringify([...accounts, account]))
         const session = saveSignedInSession(account)
@@ -124,7 +130,7 @@ export default function Navbar() {
         setCurrentUser(session)
         setProfileOpen(false)
         setPassword('')
-        navigate('/profile')
+        navigate(authDestination)
         return
       }
 
@@ -146,7 +152,7 @@ export default function Navbar() {
       setCurrentUser(session)
       setProfileOpen(false)
       setPassword('')
-      navigate('/profile')
+      navigate(authDestination)
     } catch {
       setAuthNotice('We could not complete that request. Please try again.')
     }
@@ -382,7 +388,7 @@ export default function Navbar() {
               {['login', 'signup'].map((mode) => <button key={mode} type="button" aria-pressed={authMode === mode} onClick={() => { setAuthMode(mode); setAuthNotice('') }} className={`rounded-lg py-2 text-sm font-medium capitalize transition-colors ${authMode === mode ? 'bg-white text-ink shadow-sm' : 'text-slate hover:text-ink'}`}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>)}
             </div>
             <form onSubmit={submitAuth} className="space-y-4">
-              {authMode === 'signup' && <label className="block text-sm font-medium text-ink">Name<input required maxLength={80} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="name" /></label>}
+              {authMode === 'signup' && <><label className="block text-sm font-medium text-ink">Name<input required maxLength={80} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="name" /></label><label className="block text-sm font-medium text-ink">I am a<select value={authorRole} onChange={(event) => setAuthorRole(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line bg-white px-3 font-normal outline-none focus:border-brass"><option>Student</option><option>Professor</option><option>Recruiter</option></select></label></>}
               <label className="block text-sm font-medium text-ink">Email<input required type="email" maxLength={254} value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="email" /></label>
               <label className="block text-sm font-medium text-ink">Password<input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete={authMode === 'login' ? 'current-password' : 'new-password'} /></label>
               {authNotice && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-ink">{authNotice}</p>}
