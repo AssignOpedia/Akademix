@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Star } from 'lucide-react';
+import { Star, UserRound } from 'lucide-react';
 
 /* ============================================================
    SAMPLE INTERNATIONAL TESTIMONIALS
@@ -206,11 +206,11 @@ function ReviewCard({ testimonial }) {
           />
         ) : (
           <span
-            className="ts-avatar flex items-center justify-center bg-amber-100 text-sm font-bold text-amber-900"
+            className="ts-avatar flex items-center justify-center bg-amber-100 text-amber-800"
             role="img"
-            aria-label={`${testimonial.name} initials`}
+            aria-label={`${testimonial.name} avatar`}
           >
-            {testimonial.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
+            <UserRound size={22} aria-hidden="true" />
           </span>
         )}
 
@@ -298,14 +298,25 @@ export default function Testimonials() {
   function handleReviewSubmit(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    let profile = null;
+    try {
+      profile = JSON.parse(localStorage.getItem('akademix-auth-session') || 'null');
+    } catch {
+      profile = null;
+    }
+    if (!profile?.email || !profile?.name) {
+      setReviewMessage('Please log in to your account before sharing a review.');
+      setShowReviewForm(false);
+      return;
+    }
     const review = {
-      name: String(form.get('name') || '').trim(),
+      name: profile.name,
       role: String(form.get('role') || '').trim(),
       tag: String(form.get('tag') || '').trim(),
       rating: Number(form.get('rating')),
       text: String(form.get('text') || '').trim(),
-      image: '',
-      email: (() => { try { return JSON.parse(localStorage.getItem('akademix-auth-session') || 'null')?.email || '' } catch { return '' } })(),
+      image: profile?.avatar || '',
+      email: profile?.email || '',
       submittedAt: new Date().toISOString(),
     };
 
@@ -744,17 +755,20 @@ export default function Testimonials() {
           {!showReviewForm ? (
             <button
               type="button"
-              onClick={() => { setShowReviewForm(true); setReviewMessage(''); }}
+              onClick={() => {
+                let profile = null;
+                try { profile = JSON.parse(localStorage.getItem('akademix-auth-session') || 'null'); } catch { profile = null; }
+                setReviewMessage('');
+                if (profile?.email && profile?.name) setShowReviewForm(true);
+                else window.dispatchEvent(new Event('akademix-open-auth'));
+              }}
               className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
             >
               Share your review
             </button>
           ) : (
             <form onSubmit={handleReviewSubmit} className="grid max-w-2xl gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:grid-cols-2">
-              <label className="grid gap-1 text-sm font-semibold text-slate-700">
-                Name
-                <input name="name" required maxLength="60" className="rounded-lg border border-stone-300 px-3 py-2 font-normal" />
-              </label>
+              <p className="text-sm font-semibold text-slate-700 sm:col-span-2">Reviewing as {(() => { try { return JSON.parse(localStorage.getItem('akademix-auth-session') || 'null')?.name || 'your account'; } catch { return 'your account'; } })()}</p>
               <label className="grid gap-1 text-sm font-semibold text-slate-700">
                 Role or study level
                 <input name="role" required maxLength="80" placeholder="e.g. Undergraduate student" className="rounded-lg border border-stone-300 px-3 py-2 font-normal" />

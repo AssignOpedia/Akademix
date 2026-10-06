@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { ImagePlus, Trash2 } from 'lucide-react'
 
 const sessionKey = 'akademix-auth-session'
 
@@ -15,6 +15,27 @@ function readList(key) {
 
 function prettyLabel(value) {
   return value.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
+}
+
+function resizeProfileImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('We could not read that image. Please try another file.'))
+    reader.onload = () => {
+      const image = new Image()
+      image.onerror = () => reject(new Error('That image could not be opened. Please try another file.'))
+      image.onload = () => {
+        const scale = Math.min(1, 512 / Math.max(image.width, image.height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.max(1, Math.round(image.width * scale))
+        canvas.height = Math.max(1, Math.round(image.height * scale))
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      image.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
 function readProfileActivity(email) {
@@ -44,15 +65,16 @@ function readProfileActivity(email) {
 
 export default function Profile() {
   const navigate = useNavigate()
-  const user = useMemo(() => {
+  const [user, setUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(sessionKey) || 'null')
     } catch {
       return null
     }
-  }, [])
+  })
   const [activities, setActivities] = useState([])
   const [deleteError, setDeleteError] = useState('')
+  const [photoError, setPhotoError] = useState('')
 
   useEffect(() => {
     if (!user?.email) return undefined
@@ -61,6 +83,45 @@ export default function Profile() {
     window.addEventListener('storage', loadActivities)
     return () => window.removeEventListener('storage', loadActivities)
   }, [user])
+
+  const saveProfilePhoto = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setPhotoError('Choose an image file to use as your profile picture.')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoError('Choose an image smaller than 10 MB.')
+      return
+    }
+
+    try {
+      const avatar = await resizeProfileImage(file)
+      const updatedUser = { ...user, avatar }
+      localStorage.setItem(sessionKey, JSON.stringify(updatedUser))
+      localStorage.setItem('akademix-student-profile', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      setPhotoError('')
+      window.dispatchEvent(new Event('akademix-auth-change'))
+    } catch (error) {
+      setPhotoError(error.message || 'We could not save that picture. Please try another image.')
+    }
+  }
+
+  const removeProfilePhoto = () => {
+    const { avatar, ...updatedUser } = user
+    try {
+      localStorage.setItem(sessionKey, JSON.stringify(updatedUser))
+      localStorage.setItem('akademix-student-profile', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      setPhotoError('')
+      window.dispatchEvent(new Event('akademix-auth-change'))
+    } catch {
+      setPhotoError('We could not update your profile picture. Please try again.')
+    }
+  }
 
   const deleteActivity = (activity) => {
     try {
@@ -94,6 +155,19 @@ export default function Profile() {
 
       <section className="card mt-8 p-6" aria-labelledby="student-details-title">
         <h2 id="student-details-title" className="font-display text-2xl text-ink">Student details</h2>
+        <div className="mt-5 flex flex-wrap items-center gap-4">
+          {user.avatar ? <img src={user.avatar} alt={`${user.name || 'Your'} profile`} className="h-20 w-20 rounded-full border border-line object-cover" /> : <div aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-amber-700"><ImagePlus size={28} /></div>}
+          <div>
+            <label className="btn-secondary inline-flex cursor-pointer items-center gap-2">
+              <ImagePlus size={17} />
+              {user.avatar ? 'Change picture' : 'Add profile picture'}
+              <input type="file" accept="image/*" onChange={saveProfilePhoto} className="sr-only" aria-label="Choose a profile picture" />
+            </label>
+            {user.avatar && <button type="button" onClick={removeProfilePhoto} className="ml-3 text-sm font-medium text-slate underline underline-offset-2 hover:text-ink">Remove</button>}
+            <p className="mt-2 text-xs text-slate">Image files up to 10 MB. Your picture is saved in this browser.</p>
+            {photoError && <p role="alert" className="mt-2 text-sm text-red-700">{photoError}</p>}
+          </div>
+        </div>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           <div><dt className="text-xs text-slate">Name</dt><dd className="mt-1 font-medium text-ink">{user.name || 'Not provided'}</dd></div>
           <div><dt className="text-xs text-slate">Email</dt><dd className="mt-1 font-medium text-ink">{user.email}</dd></div>

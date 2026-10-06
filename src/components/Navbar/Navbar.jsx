@@ -76,8 +76,19 @@ export default function Navbar() {
         setCurrentUser(null)
       }
     }
+    const openAuth = () => {
+      setAuthMode('login')
+      setAuthNotice('')
+      setPassword('')
+      setProfileEmail(profile?.email || '')
+      setProfileOpen(true)
+    }
     window.addEventListener('akademix-auth-change', syncSession)
-    return () => window.removeEventListener('akademix-auth-change', syncSession)
+    window.addEventListener('akademix-open-auth', openAuth)
+    return () => {
+      window.removeEventListener('akademix-auth-change', syncSession)
+      window.removeEventListener('akademix-open-auth', openAuth)
+    }
   }, [])
 
   const openAuthDialog = () => {
