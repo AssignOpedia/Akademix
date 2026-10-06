@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { showFormSubmissionAlert } from '../../utils/formSubmissionAlert'
 import { countries } from '../../data/countries'
 
 const supportOptions = [
@@ -34,6 +35,7 @@ export default function StudyAbroadSupportForm({ pathway }) {
     try {
       const existing = JSON.parse(localStorage.getItem('akademix-inquiries') || '[]')
       localStorage.setItem('akademix-inquiries', JSON.stringify([...existing, request]))
+      showFormSubmissionAlert('study abroad support', request.name, { Education: request.currentEducation, Destination: request.destination, Subject: request.subject, Qualification: request.qualification, StartDate: request.startDate, SupportNeeded: request.supportNeeded, Message: request.message })
       setSubmitted(true)
       setError('')
     } catch {

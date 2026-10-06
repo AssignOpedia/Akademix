@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bot, RotateCcw, Send, X } from 'lucide-react'
+import { GoogleGenAI } from '@google/genai'
 import { allSubjects } from '../../data/subjects'
 import assistantAvatar from './image.png'
+
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
 const suggestions = [
   'How do I plan an assignment?',
@@ -84,10 +87,29 @@ function getReply(message) {
   return { text: 'I can help with study planning, subject questions, assignment steps, college comparisons, and finding guidance. Share the subject and what you are trying to do, and I’ll give you a more specific starting point.' }
 }
 
+async function getAiReply(message) {
+  if (!API_KEY) throw new Error('Gemini API key is not configured')
+
+  const ai = new GoogleGenAI({ apiKey: API_KEY })
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: message,
+    config: {
+      systemInstruction: "You are Akademix Assistant, a friendly academic guidance helper. Answer the student message directly in clear, concise language. Help with learning, assignments, subject and university exploration, and study planning. For current admissions, visa, or scholarship facts, tell the student to verify details with official sources. Do not claim that a request has been sent to staff or a human mentor.",
+      maxOutputTokens: 350,
+    },
+  })
+
+  const text = response.text?.trim()
+  if (!text) throw new Error('The AI returned an empty response')
+  return text
+}
+
 export default function HelpChat() {
   const [open, setOpen] = useState(false)
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState([welcomeMessage])
+  const [isReplying, setIsReplying] = useState(false)
   const transcriptRef = useRef(null)
   const nextId = useRef(1)
 
@@ -97,21 +119,38 @@ export default function HelpChat() {
     }
   }, [messages, open])
 
-  const sendMessage = (value = question) => {
+  const sendMessage = async (value = question) => {
     const content = value.trim()
-    if (!content) return
+    if (!content || isReplying) return
 
+    const assistantId = nextId.current++
     setMessages((current) => [
       ...current,
       { id: nextId.current++, from: 'user', text: content },
-      { id: nextId.current++, from: 'assistant', ...getReply(content) },
+      { id: assistantId, from: 'assistant', text: 'Thinking...', pending: true },
     ])
     setQuestion('')
+    setIsReplying(true)
+
+    try {
+      const reply = await getAiReply(content)
+      setMessages((current) => current.map((message) => (
+        message.id === assistantId ? { ...message, text: reply, pending: false } : message
+      )))
+    } catch {
+      const fallback = getReply(content)
+      setMessages((current) => current.map((message) => (
+        message.id === assistantId ? { ...message, ...fallback, pending: false } : message
+      )))
+    } finally {
+      setIsReplying(false)
+    }
   }
 
   const resetChat = () => {
     setMessages([welcomeMessage])
     setQuestion('')
+    setIsReplying(false)
   }
 
   return (
@@ -145,7 +184,7 @@ export default function HelpChat() {
                 {message.from === 'assistant' && (
                   <img src={assistantAvatar} alt="" className="mb-1 h-7 w-7 rounded-full object-cover ring-1 ring-indigo-200" />
                 )}
-                <p className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${message.from === 'user' ? 'rounded-br-md bg-ink text-white' : 'rounded-bl-md border border-stone-200 bg-white text-ink'}`}>
+                <p className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${message.from === 'user' ? 'rounded-br-md bg-ink text-white' : 'rounded-bl-md border border-stone-200 bg-white text-ink'} ${message.pending ? 'animate-pulse text-slate' : ''}`}>
                   {message.text}
                 </p>
                 {message.to && (
@@ -159,7 +198,7 @@ export default function HelpChat() {
 
           <div className="flex flex-wrap gap-2 border-t border-stone-100 bg-white px-3 py-3">
             {suggestions.map((suggestion) => (
-              <button key={suggestion} type="button" onClick={() => sendMessage(suggestion)} className="rounded-full border border-stone-200 px-3 py-1.5 text-xs text-slate hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+              <button key={suggestion} type="button" disabled={isReplying} onClick={() => sendMessage(suggestion)} className="rounded-full border border-stone-200 px-3 py-1.5 text-xs text-slate hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
                 {suggestion}
               </button>
             ))}
@@ -168,7 +207,7 @@ export default function HelpChat() {
           <form onSubmit={(event) => { event.preventDefault(); sendMessage() }} className="flex items-center gap-2 border-t border-stone-200 bg-white p-3">
             <label className="sr-only" htmlFor="help-chat-question">Ask Akademix Assistant</label>
             <input id="help-chat-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask a question..." className="h-10 min-w-0 flex-1 rounded-xl border border-stone-200 px-3 text-sm text-ink outline-none placeholder:text-slate-light focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
-            <button type="submit" aria-label="Send message" disabled={!question.trim()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="submit" aria-label="Send message" disabled={!question.trim() || isReplying} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40">
               <Send size={16} />
             </button>
           </form>

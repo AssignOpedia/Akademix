@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { CheckCircle2, X } from 'lucide-react'
 import { mentorProfiles } from '../../data/mentors'
 import ProfessorAvatar from '../../components/ProfessorAvatar/ProfessorAvatar'
+import { showFormSubmissionAlert } from '../../utils/formSubmissionAlert'
 
 export default function Mentoring() {
   const [contactMentor, setContactMentor] = useState(null)
@@ -127,6 +128,7 @@ export default function Mentoring() {
                         submittedAt: new Date().toISOString(),
                       }
                       localStorage.setItem('akademix-mentor-requests', JSON.stringify([...existing, request]))
+                      showFormSubmissionAlert('mentor request', request.name, { Mentor: request.mentorName, GuidanceNeeded: request.message })
                       setSubmitError('')
                       setSubmitted(true)
                     } catch {

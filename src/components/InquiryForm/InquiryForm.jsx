@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { showFormSubmissionAlert } from '../../utils/formSubmissionAlert'
 
 const REQUESTS_KEY = 'akademix-inquiries'
 
@@ -22,6 +23,7 @@ export default function InquiryForm({ subject, context, description }) {
     try {
       const saved = JSON.parse(localStorage.getItem(REQUESTS_KEY) || '[]')
       localStorage.setItem(REQUESTS_KEY, JSON.stringify([...saved, request]))
+      showFormSubmissionAlert('professor enquiry', request.name, { Subject: request.subject, Message: request.message })
       setSubmitted(true)
       setError('')
     } catch {

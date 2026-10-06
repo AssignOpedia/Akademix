@@ -57,6 +57,8 @@ const TESTIMONIALS = [
   },
 ];
 
+import { showFormSubmissionAlert } from '../../../utils/formSubmissionAlert';
+
 const REVIEW_STORAGE_KEY = 'akademix-student-reviews';
 
 function readSavedReviews() {
@@ -303,12 +305,15 @@ export default function Testimonials() {
       rating: Number(form.get('rating')),
       text: String(form.get('text') || '').trim(),
       image: '',
+      email: (() => { try { return JSON.parse(localStorage.getItem('akademix-auth-session') || 'null')?.email || '' } catch { return '' } })(),
+      submittedAt: new Date().toISOString(),
     };
 
     const updated = [...submittedReviews, review].slice(-TESTIMONIALS.length);
     setSubmittedReviews(updated);
     try {
       localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(updated));
+      showFormSubmissionAlert('student review', review.name, { Role: review.role, Category: review.tag, Rating: review.rating, Review: review.text });
       setReviewMessage('Thanks! Your review now appears in place of a sample review on this device.');
     } catch {
       setReviewMessage('Your review was added for this session, but could not be saved on this device.');

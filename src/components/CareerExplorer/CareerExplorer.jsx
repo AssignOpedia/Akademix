@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { showFormSubmissionAlert } from '../../utils/formSubmissionAlert'
 import { Link } from 'react-router-dom'
 import { careerPaths } from '../../data/careerPaths'
 import { allSubjects } from '../../data/subjects'
@@ -86,6 +87,7 @@ export default function CareerExplorer() {
   const savePathway = () => {
     const pathway = {
       ...path,
+      email: (() => { try { return JSON.parse(localStorage.getItem('akademix-auth-session') || 'null')?.email || '' } catch { return '' } })(),
       careers,
       courseIds: availableCourses.slice(0, 3).map((course) => course.id),
       professorIds: matchingProfessors.map((professor) => professor.id),
@@ -96,6 +98,9 @@ export default function CareerExplorer() {
       const existing = JSON.parse(localStorage.getItem('akademix-pathways') || '[]')
       const updated = [pathway, ...existing.filter((item) => item.subject !== path.subject || item.country !== path.country)]
       localStorage.setItem('akademix-pathways', JSON.stringify(updated))
+      let studentName = ''
+      try { studentName = JSON.parse(localStorage.getItem('akademix-auth-session') || 'null')?.name || '' } catch { studentName = '' }
+      showFormSubmissionAlert('career pathway', studentName, { Interest: path.interest, Level: path.level, Subject: path.subject, Department: path.department, Degree: path.degree, Country: path.country })
       setSavedPathways(updated)
       setSaved(true)
     } catch {

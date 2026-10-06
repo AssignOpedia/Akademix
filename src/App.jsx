@@ -7,6 +7,7 @@ import PageBackground from './pages/PageBackground'
 import AppRoutes from './routes/AppRoutes'
 import IntroSplash from './components/Introduction/IntroSplash'
 import AIMentor from "./components/AIMentor/AIMentor"
+import FormSubmissionAlert from './components/FormSubmissionAlert/FormSubmissionAlert'
 export default function App() {
   const location = useLocation()
 
@@ -71,6 +72,7 @@ export default function App() {
         <Footer />
         <HelpChat />
         <AIMentor />
+        <FormSubmissionAlert />
       </div>
     </div>
   )
