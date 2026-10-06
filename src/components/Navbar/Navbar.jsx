@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import CountryTicker from '../CountryTicker/CountryTicker'
 
@@ -45,6 +45,7 @@ function saveSignedInSession(user) {
 }
 
 export default function Navbar() {
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login')
@@ -67,19 +68,24 @@ export default function Navbar() {
   const [profileEmail, setProfileEmail] = useState(profile?.email || '')
   const [password, setPassword] = useState('')
 
+  useEffect(() => {
+    const syncSession = () => {
+      try {
+        setCurrentUser(JSON.parse(localStorage.getItem(sessionStorageKey) || 'null'))
+      } catch {
+        setCurrentUser(null)
+      }
+    }
+    window.addEventListener('akademix-auth-change', syncSession)
+    return () => window.removeEventListener('akademix-auth-change', syncSession)
+  }, [])
+
   const openAuthDialog = () => {
     setAuthMode('login')
     setAuthNotice('')
     setPassword('')
     setProfileEmail(profile?.email || '')
     setProfileOpen(true)
-  }
-
-  const logOut = () => {
-    localStorage.removeItem(sessionStorageKey)
-    setCurrentUser(null)
-    setOpen(false)
-    setProfileOpen(false)
   }
 
   const submitAuth = async (event) => {
@@ -107,6 +113,7 @@ export default function Navbar() {
         setCurrentUser(session)
         setProfileOpen(false)
         setPassword('')
+        navigate('/profile')
         return
       }
 
@@ -128,6 +135,7 @@ export default function Navbar() {
       setCurrentUser(session)
       setProfileOpen(false)
       setPassword('')
+      navigate('/profile')
     } catch {
       setAuthNotice('We could not complete that request. Please try again.')
     }
@@ -207,7 +215,7 @@ export default function Navbar() {
             {/* Login and sign up */}
             <button
               type="button"
-              onClick={currentUser ? logOut : openAuthDialog}
+              onClick={currentUser ? () => navigate('/profile') : openAuthDialog}
               className="
                 text-sm
                 font-semibold
@@ -218,7 +226,7 @@ export default function Navbar() {
                 transition-colors
               "
             >
-              {currentUser ? 'Log out' : 'Login / Sign up'}
+              {currentUser ? 'Profile' : 'Login / Sign up'}
             </button>
 
             {/* Get Guidance */}
@@ -319,8 +327,8 @@ export default function Navbar() {
               </NavLink>
             ))}
 
-            <button type="button" onClick={currentUser ? logOut : () => { setOpen(false); openAuthDialog() }} className="py-2.5 text-left text-sm font-semibold text-slate-800 hover:text-amber-700">
-              {currentUser ? 'Log out' : 'Login / Sign up'}
+            <button type="button" onClick={currentUser ? () => { setOpen(false); navigate('/profile') } : () => { setOpen(false); openAuthDialog() }} className="py-2.5 text-left text-sm font-semibold text-slate-800 hover:text-amber-700">
+              {currentUser ? 'Profile' : 'Login / Sign up'}
             </button>
 
             {/* Mobile CTA */}

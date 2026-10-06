@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { CheckCircle2, X } from 'lucide-react'
 import { mentorProfiles } from '../../data/mentors'
@@ -9,6 +10,7 @@ export default function Mentoring() {
   const [submitted, setSubmitted] = useState(false)
   const [studentName, setStudentName] = useState('')
   const [studentEmail, setStudentEmail] = useState('')
+  const [submitError, setSubmitError] = useState('')
 
   const openContactForm = (mentor) => {
     let savedProfile = null
@@ -21,6 +23,7 @@ export default function Mentoring() {
     setStudentEmail(savedProfile?.email || '')
     setContactMentor(mentor)
     setSubmitted(false)
+    setSubmitError('')
   }
 
   const closeContactForm = () => {
@@ -81,9 +84,9 @@ export default function Mentoring() {
         Browse college professors
       </Link>
 
-      {contactMentor && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-ink/60 px-4 pb-[8vh] pt-[6vh] backdrop-blur-sm sm:pt-[8vh]" onMouseDown={(event) => { if (event.target === event.currentTarget) closeContactForm() }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="mentor-contact-title" className="relative max-h-[calc(100dvh-16vh)] w-full max-w-lg overflow-y-auto rounded-3xl border border-white/80 bg-gradient-to-br from-amber-50 via-white to-emerald-50 shadow-2xl shadow-ink/30">
+      {contactMentor && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-ink/60 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) closeContactForm() }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="mentor-contact-title" className="relative max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-white/80 bg-gradient-to-br from-amber-50 via-white to-emerald-50 shadow-2xl shadow-ink/30">
             <button type="button" onClick={closeContactForm} aria-label="Close contact form" className="absolute right-4 top-4 rounded-lg p-2 text-slate hover:bg-stone hover:text-ink">
               <X size={18} />
             </button>
@@ -91,9 +94,9 @@ export default function Mentoring() {
             {submitted ? (
               <div className="px-6 py-10 text-center sm:px-10">
                 <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brass/15 text-brass-dark"><CheckCircle2 className="h-7 w-7" /></span>
-                <h2 id="mentor-contact-title" className="mt-5 font-display text-2xl text-ink">Message delivered</h2>
+                <h2 id="mentor-contact-title" className="mt-5 font-display text-2xl text-ink">Request saved</h2>
                 <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate">
-                  Your message has been delivered to {contactMentor.name}. Thank you for reaching out.
+                  Your message to {contactMentor.name} has been saved in this browser and will appear in your profile.
                 </p>
                 <button type="button" onClick={closeContactForm} className="btn-primary mt-6">Done</button>
               </div>
@@ -110,7 +113,26 @@ export default function Mentoring() {
                   </div>
                 </div>
                 <div className="px-6 pb-6 pt-5 sm:px-8 sm:pb-8">
-                  <form onSubmit={(event) => { event.preventDefault(); setSubmitted(true) }} className="mt-5 space-y-4">
+                  <form onSubmit={(event) => {
+                    event.preventDefault()
+                    try {
+                      const existing = JSON.parse(localStorage.getItem('akademix-mentor-requests') || '[]')
+                      const request = {
+                        id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`,
+                        mentorName: contactMentor.name,
+                        mentorRole: contactMentor.role,
+                        name: studentName.trim(),
+                        email: studentEmail.trim(),
+                        message: new FormData(event.currentTarget).get('message').trim(),
+                        submittedAt: new Date().toISOString(),
+                      }
+                      localStorage.setItem('akademix-mentor-requests', JSON.stringify([...existing, request]))
+                      setSubmitError('')
+                      setSubmitted(true)
+                    } catch {
+                      setSubmitError('We could not save your request in this browser. Please try again.')
+                    }
+                  }} className="mt-5 space-y-4">
                   <div>
                     <label htmlFor="mentor-contact-name" className="mb-1 block text-sm font-medium text-ink">Your name</label>
                     <input id="mentor-contact-name" name="name" required autoComplete="name" value={studentName} onChange={(event) => setStudentName(event.target.value)} className="h-11 w-full rounded-lg border border-line px-3 text-sm outline-none focus:border-brass" />
@@ -123,13 +145,15 @@ export default function Mentoring() {
                     <label htmlFor="mentor-contact-message" className="mb-1 block text-sm font-medium text-ink">What guidance do you need?</label>
                     <textarea id="mentor-contact-message" name="message" required rows="4" className="w-full resize-y rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-brass" />
                   </div>
+                    {submitError && <p role="alert" className="text-sm text-red-700">{submitError}</p>}
                     <button type="submit" className="btn-primary w-full justify-center">Send message</button>
                   </form>
                 </div>
               </>
             )}
           </section>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

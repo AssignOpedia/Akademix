@@ -12,6 +12,7 @@ import Mentoring from '../pages/Mentoring/Mentoring'
 import CareerGuidance from '../pages/CareerGuidance/CareerGuidance'
 import About from '../pages/About/About'
 import AssignmentGuidance from '../pages/AssignmentGuidance/AssignmentGuidance'
+import Profile from '../pages/Profile/Profile'
 
 export default function AppRoutes() {
   return (
@@ -29,6 +30,7 @@ export default function AppRoutes() {
       <Route path="/courses/:id" element={<CourseDetails />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/mentoring" element={<Mentoring />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/assignment-guidance" element={<AssignmentGuidance />} />
       <Route path="/career-guidance" element={<CareerGuidance />} />
       <Route path="/about" element={<About />} />

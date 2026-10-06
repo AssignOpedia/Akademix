@@ -57,6 +57,17 @@ const TESTIMONIALS = [
   },
 ];
 
+const REVIEW_STORAGE_KEY = 'akademix-student-reviews';
+
+function readSavedReviews() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
 
 function useInView(threshold = 0.4) {
   const ref = useRef(null);
@@ -182,14 +193,24 @@ function ReviewCard({ testimonial }) {
       <figcaption className="flex items-center gap-3">
 
         {/* Profile Picture */}
-        <img
-          src={testimonial.image}
-          alt={`${testimonial.name} profile`}
-          className="ts-avatar object-cover"
-          loading="lazy"
-          width="44"
-          height="44"
-        />
+        {testimonial.image ? (
+          <img
+            src={testimonial.image}
+            alt={`${testimonial.name} profile`}
+            className="ts-avatar object-cover"
+            loading="lazy"
+            width="44"
+            height="44"
+          />
+        ) : (
+          <span
+            className="ts-avatar flex items-center justify-center bg-amber-100 text-sm font-bold text-amber-900"
+            role="img"
+            aria-label={`${testimonial.name} initials`}
+          >
+            {testimonial.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
+          </span>
+        )}
 
         {/* Name + Role */}
         <span className="min-w-0">
@@ -263,21 +284,53 @@ function Row({ items, reverse = false }) {
 export default function Testimonials() {
 
   const [topRef, topInView] = useInView(0.4);
+  const [submittedReviews, setSubmittedReviews] = useState(readSavedReviews);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState('');
+
+  const displayedTestimonials = [
+    ...submittedReviews,
+    ...TESTIMONIALS.slice(submittedReviews.length),
+  ];
+
+  function handleReviewSubmit(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const review = {
+      name: String(form.get('name') || '').trim(),
+      role: String(form.get('role') || '').trim(),
+      tag: String(form.get('tag') || '').trim(),
+      rating: Number(form.get('rating')),
+      text: String(form.get('text') || '').trim(),
+      image: '',
+    };
+
+    const updated = [...submittedReviews, review].slice(-TESTIMONIALS.length);
+    setSubmittedReviews(updated);
+    try {
+      localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(updated));
+      setReviewMessage('Thanks! Your review now appears in place of a sample review on this device.');
+    } catch {
+      setReviewMessage('Your review was added for this session, but could not be saved on this device.');
+    }
+    event.currentTarget.reset();
+    setShowReviewForm(false);
+  }
 
   /* Calculate average rating automatically */
   const average =
-    TESTIMONIALS.reduce(
+    displayedTestimonials.reduce(
       (sum, testimonial) =>
         sum + testimonial.rating,
       0
-    ) / TESTIMONIALS.length;
+    ) / displayedTestimonials.length;
 
   const rounded = Math.round(average);
 
-  const rowA = TESTIMONIALS;
+  const rowA = displayedTestimonials;
 
   const rowB = [
-    ...TESTIMONIALS,
+    ...displayedTestimonials,
   ].reverse();
 
   return (
@@ -675,11 +728,54 @@ export default function Testimonials() {
             </div>
 
             <p className="mt-1 text-sm font-semibold text-slate-700">
-              Average from {TESTIMONIALS.length} student reviews
+              Average from {displayedTestimonials.length} student reviews
             </p>
 
           </div>
 
+        </div>
+
+        <div className="mb-10">
+          {!showReviewForm ? (
+            <button
+              type="button"
+              onClick={() => { setShowReviewForm(true); setReviewMessage(''); }}
+              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            >
+              Share your review
+            </button>
+          ) : (
+            <form onSubmit={handleReviewSubmit} className="grid max-w-2xl gap-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                Name
+                <input name="name" required maxLength="60" className="rounded-lg border border-stone-300 px-3 py-2 font-normal" />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                Role or study level
+                <input name="role" required maxLength="80" placeholder="e.g. Undergraduate student" className="rounded-lg border border-stone-300 px-3 py-2 font-normal" />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                Topic
+                <input name="tag" required maxLength="40" placeholder="e.g. Mentoring" className="rounded-lg border border-stone-300 px-3 py-2 font-normal" />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                Rating
+                <select name="rating" required defaultValue="5" className="rounded-lg border border-stone-300 px-3 py-2 font-normal">
+                  {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} {rating === 1 ? 'star' : 'stars'}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-semibold text-slate-700 sm:col-span-2">
+                Your review
+                <textarea name="text" required minLength="10" maxLength="500" rows="4" className="rounded-lg border border-stone-300 px-3 py-2 font-normal" />
+              </label>
+              <p className="text-xs text-slate-500 sm:col-span-2">Reviews are saved only in this browser and replace sample reviews here. They are not sent to Akademix.</p>
+              <div className="flex gap-3 sm:col-span-2">
+                <button type="submit" className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700">Add review</button>
+                <button type="button" onClick={() => setShowReviewForm(false)} className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-semibold text-slate-700">Cancel</button>
+              </div>
+            </form>
+          )}
+          {reviewMessage && <p role="status" className="mt-3 text-sm text-slate-600">{reviewMessage}</p>}
         </div>
 
       </div>
