@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import CountryTicker from '../CountryTicker/CountryTicker'
+import { countries } from '../../data/countries'
 
 const links = [
   { to: '/', label: 'Home' },
@@ -39,7 +40,7 @@ async function hashPassword(password, salt) {
 }
 
 function saveSignedInSession(user) {
-  const session = { name: user.name, email: user.email, role: user.role || 'Student' }
+  const session = { name: user.name, email: user.email, role: user.role || 'Student', phone: user.phone || '', dateOfBirth: user.dateOfBirth || '', gender: user.gender || '', country: user.country || user.location || '' }
   localStorage.setItem(sessionStorageKey, JSON.stringify(session))
   localStorage.setItem('akademix-student-profile', JSON.stringify(session))
   return session
@@ -69,6 +70,10 @@ export default function Navbar() {
   const [profileEmail, setProfileEmail] = useState(profile?.email || '')
   const [password, setPassword] = useState('')
   const [authorRole, setAuthorRole] = useState('Student')
+  const [phone, setPhone] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [gender, setGender] = useState('')
+  const [country, setCountry] = useState('')
   const [authDestination, setAuthDestination] = useState('/profile')
 
   useEffect(() => {
@@ -123,6 +128,10 @@ export default function Navbar() {
           salt: bytesToHex(salt),
           passwordHash: await hashPassword(password, salt),
           role: authorRole,
+          phone: authorRole === 'Student' ? phone.trim() : '',
+          dateOfBirth: authorRole === 'Student' ? dateOfBirth : '',
+          gender: authorRole === 'Student' ? gender : '',
+          country: authorRole === 'Student' ? country : '',
         }
         localStorage.setItem(accountStorageKey, JSON.stringify([...accounts, account]))
         const session = saveSignedInSession(account)
@@ -371,7 +380,7 @@ export default function Navbar() {
 
       {profileOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setProfileOpen(false) }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="student-profile-title" className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl">
+          <section role="dialog" aria-modal="true" aria-labelledby="student-profile-title" className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div><p className="eyebrow mb-1">Akademix account</p><h2 id="student-profile-title" className="font-display text-2xl text-ink">{authMode === 'login' ? 'Welcome back' : 'Create your account'}</h2><p className="mt-2 text-sm text-slate">{authMode === 'login' ? 'Log in to your student account.' : 'Sign up to get started with Akademix.'}</p></div>
               <button type="button" aria-label="Close login dialog" onClick={() => setProfileOpen(false)} className="rounded-lg p-2 text-slate hover:bg-stone"><X size={18} /></button>
@@ -380,7 +389,7 @@ export default function Navbar() {
               {['login', 'signup'].map((mode) => <button key={mode} type="button" aria-pressed={authMode === mode} onClick={() => { setAuthMode(mode); setAuthNotice('') }} className={`rounded-lg py-2 text-sm font-medium capitalize transition-colors ${authMode === mode ? 'bg-white text-ink shadow-sm' : 'text-slate hover:text-ink'}`}>{mode === 'login' ? 'Log in' : 'Sign up'}</button>)}
             </div>
             <form onSubmit={submitAuth} className="space-y-4">
-              {authMode === 'signup' && <><label className="block text-sm font-medium text-ink">Name<input required maxLength={80} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="name" /></label><label className="block text-sm font-medium text-ink">I am a<select value={authorRole} onChange={(event) => setAuthorRole(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line bg-white px-3 font-normal outline-none focus:border-brass"><option>Student</option><option>Professor</option><option>Recruiter</option></select></label></>}
+              {authMode === 'signup' && <><label className="block text-sm font-medium text-ink">Name<input required maxLength={80} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="name" /></label><label className="block text-sm font-medium text-ink">I am a<select value={authorRole} onChange={(event) => setAuthorRole(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line bg-white px-3 font-normal outline-none focus:border-brass"><option>Student</option><option>Professor</option><option>Recruiter</option></select></label>{authorRole === 'Student' && <><label className="block text-sm font-medium text-ink">Phone number<input required type="tel" maxLength={30} value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="tel" /></label><label className="block text-sm font-medium text-ink">Date of birth<input required type="date" max={new Date().toISOString().slice(0, 10)} value={dateOfBirth} onChange={(event) => setDateOfBirth(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="bday" /></label><label className="block text-sm font-medium text-ink">Gender<select required value={gender} onChange={(event) => setGender(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line bg-white px-3 font-normal outline-none focus:border-brass"><option value="">Select gender</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option><option>Other</option></select></label><label className="block text-sm font-medium text-ink">Country<select required value={country} onChange={(event) => setCountry(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line bg-white px-3 font-normal outline-none focus:border-brass" autoComplete="country-name"><option value="">Select a country</option>{countries.map((option) => <option key={option.code} value={option.name}>{option.name}</option>)}</select></label></>}</>}
               <label className="block text-sm font-medium text-ink">Email<input required type="email" maxLength={254} value={profileEmail} onChange={(event) => setProfileEmail(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete="email" /></label>
               <label className="block text-sm font-medium text-ink">Password<input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1.5 h-11 w-full rounded-lg border border-line px-3 font-normal outline-none focus:border-brass" autoComplete={authMode === 'login' ? 'current-password' : 'new-password'} /></label>
               {authNotice && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-ink">{authNotice}</p>}
