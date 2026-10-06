@@ -154,7 +154,7 @@ export default function HelpChat() {
   }
 
   return (
-    <div className="fixed bottom-12 right-5 z-[80] flex flex-col items-end gap-3 sm:bottom-14 sm:right-6">
+    <div className="fixed bottom-28 right-5 z-[80] flex flex-col items-end gap-3 sm:bottom-32 sm:right-6">
       {open && (
         <section
           aria-label="Akademix help chat"

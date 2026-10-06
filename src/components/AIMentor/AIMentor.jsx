@@ -916,10 +916,10 @@ options and make their own informed decision.
         onClick={startMentor}
         className="
           fixed
-          bottom-28
+          bottom-12
           right-3
           z-[81]
-          sm:bottom-32
+          sm:bottom-14
           sm:right-6
           flex
           items-center
@@ -972,14 +972,14 @@ options and make their own informed decision.
     <div
       className="
         fixed
-        bottom-28
+        bottom-12
         right-3
         z-[81]
         w-[calc(100vw-1.5rem)]
         max-w-[360px]
         max-h-[calc(100dvh-8rem)]
         overflow-y-auto
-        sm:bottom-32
+        sm:bottom-14
         sm:right-6
         overflow-x-hidden
         rounded-[28px]
