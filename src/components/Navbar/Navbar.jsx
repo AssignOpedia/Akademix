@@ -95,8 +95,8 @@ export default function Navbar() {
     }
   }, [])
 
-  const openAuthDialog = () => {
-    setAuthMode('login')
+  const openAuthDialog = (mode = 'login') => {
+    setAuthMode(mode)
     setAuthNotice('')
     setPassword('')
     setProfileEmail(profile?.email || '')
@@ -232,18 +232,10 @@ export default function Navbar() {
             {/* Login and sign up */}
             <button
               type="button"
-              onClick={currentUser ? () => navigate('/profile') : openAuthDialog}
-              className="
-                text-sm
-                font-semibold
-                text-slate-800
-                hover:text-slate-950
-                px-2
-                py-2
-                transition-colors
-              "
+              onClick={currentUser ? () => navigate('/profile') : () => openAuthDialog('signup')}
+              className={currentUser ? 'px-2 py-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-950' : 'btn-donate'}
             >
-              {currentUser ? 'Profile' : 'Login / Sign up'}
+              {currentUser ? 'Profile' : 'Sign Up'}
             </button>
 
             {/* Get Guidance */}
@@ -344,8 +336,8 @@ export default function Navbar() {
               </NavLink>
             ))}
 
-            <button type="button" onClick={currentUser ? () => { setOpen(false); navigate('/profile') } : () => { setOpen(false); openAuthDialog() }} className="py-2.5 text-left text-sm font-semibold text-slate-800 hover:text-amber-700">
-              {currentUser ? 'Profile' : 'Login / Sign up'}
+            <button type="button" onClick={currentUser ? () => { setOpen(false); navigate('/profile') } : () => { setOpen(false); openAuthDialog('signup') }} className="py-2.5 text-left text-sm font-semibold text-slate-800 hover:text-amber-700">
+              {currentUser ? 'Profile' : 'Sign Up'}
             </button>
 
             {/* Mobile CTA */}

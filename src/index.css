@@ -144,6 +144,39 @@ img {
   @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-ink/20 text-ink px-5 sm:px-6 py-3 text-sm font-medium hover:border-ink/50 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 transition-all duration-200;
 }
 
+.btn-donate {
+  --btn-bg-1: hsl(194 100% 69%);
+  --btn-bg-2: hsl(217 100% 56%);
+  --btn-bg-color: hsl(0 0% 100%);
+  cursor: pointer;
+  min-width: 104px;
+  min-height: 44px;
+  padding: .7em 1.15em;
+  border: 0;
+  border-radius: 9999px;
+  color: var(--btn-bg-color);
+  font-size: .875rem;
+  font-weight: 600;
+  background-size: 280% auto;
+  background-image: linear-gradient(325deg, var(--btn-bg-2) 0%, var(--btn-bg-1) 55%, var(--btn-bg-2) 90%);
+  box-shadow: 0 0 20px rgb(71 184 255 / .5), 0 5px 5px -1px rgb(58 125 233 / .25), inset 4px 4px 8px rgb(175 230 255 / .5), inset -4px -4px 8px rgb(19 95 216 / .35);
+  transition: background-position .8s ease, transform .2s ease;
+}
+
+.btn-donate:hover {
+  background-position: right top;
+  transform: translateY(-1px);
+}
+
+.btn-donate:is(:focus, :focus-visible, :active) {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--btn-bg-color), 0 0 0 6px var(--btn-bg-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-donate { transition: none; }
+}
+
 .brand-link {
   transition: transform 220ms ease, opacity 220ms ease;
 }
