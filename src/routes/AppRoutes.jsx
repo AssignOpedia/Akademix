@@ -8,6 +8,7 @@ import Countries from '../pages/Countries/Countries'
 import CountryDetails from '../pages/CountryDetails/CountryDetails'
 import Courses from '../pages/Courses/Courses'
 import CourseDetails from '../pages/CourseDetails/CourseDetails'
+import InternationalCourseDetails from '../pages/InternationalCourseDetails/InternationalCourseDetails'
 import Mentoring from '../pages/Mentoring/Mentoring'
 import CareerGuidance from '../pages/CareerGuidance/CareerGuidance'
 import ServiceEnquiryForm from '../pages/CareerGuidance/ServiceEnquiryForm'
@@ -29,6 +30,7 @@ export default function AppRoutes() {
       <Route path="/universities/:id" element={<Universities />} />
       <Route path="/countries" element={<Countries />} />
       <Route path="/countries/:code" element={<CountryDetails />} />
+      <Route path="/international-courses/:id" element={<InternationalCourseDetails />} />
       <Route path="/courses/:id" element={<CourseDetails />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/mentoring" element={<Mentoring />} />

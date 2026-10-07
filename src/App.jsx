@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
@@ -10,6 +10,17 @@ import AIMentor from "./components/AIMentor/AIMentor"
 import FormSubmissionAlert from './components/FormSubmissionAlert/FormSubmissionAlert'
 export default function App() {
   const location = useLocation()
+
+  useLayoutEffect(() => {
+    if (location.hash) {
+      const frame = window.requestAnimationFrame(() => {
+        document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView({ block: 'start' })
+      })
+      return () => window.cancelAnimationFrame(frame)
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [location.key, location.hash])
 
   useEffect(() => {
     const main = document.querySelector('main')
