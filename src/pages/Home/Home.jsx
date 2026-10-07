@@ -8,6 +8,7 @@ import { universities as appUniversities } from '../../data/universities';
 import { getUniversityCampusImage, getUniversityCampusPhoto } from '../../data/universityImages';
 import AnalyticsDashboard from '../../components/AnalyticsDashboard/AnalyticsDashboard';
 import Testimonials from '../../components/AnalyticsDashboard/Testimonials/Testimonials';
+import InternationalCourses from '../../components/InternationalCourses';
 import { mentorProfiles } from '../../data/mentors';
 import {
   GraduationCap,
@@ -397,47 +398,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Coaching */}
-      <section id="coaching" className="relative z-10 py-24 border-t border-stone-300/60 bg-white/40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-amber-700 font-bold mb-2 block">Learn with Akademix</span>
-            <h2 className="font-serif text-3xl sm:text-5xl text-slate-900 mb-4">Coaching, beyond the classroom.</h2>
-            <p className="text-slate-700 text-sm sm:text-base">Comprehensive programs tailored to every stage of your academic career.</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { title: 'School Coaching', desc: 'IB, AP, IGCSE & A-Levels mastery with distinction.' },
-              { title: 'Entrance Preparation', desc: 'SAT, ACT, GRE, GMAT & LNAT elite test strategies.' },
-              { title: 'University Subjects', desc: 'Rigorous collegiate tutoring for top-tier GPA.' },
-              { title: 'Assignment Guidance', desc: 'Understand briefs, plan research, and work through difficult concepts.' },
-              { title: 'Skill Development', desc: 'Critical thinking, public speaking & academic writing.' },
-              { title: 'Exam Preparation', desc: 'Timed mock tests, score analysis & weakness correction.' },
-              { title: 'Research Support', desc: 'Co-authoring papers & journal publication assistance.' },
-              { title: 'Career Preparation', desc: 'Resume building, networking & mentorship loops.' },
-            ].map((coach, index) => (
-              <div
-                key={index}
-                onClick={() => navigate(coach.title === 'Assignment Guidance' ? '/assignment-guidance' : '/courses')}
-                className="group p-6 rounded-3xl bg-gradient-to-br from-white/95 via-amber-50/85 to-rose-50/75 border border-amber-200/70 hover:border-amber-400/70 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 cursor-pointer flex flex-col justify-between shadow-md hover-lift card-anim"
-                style={{ animationDelay: `${index * 0.06}s` }}
-              >
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center font-bold mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors shadow-sm icon-pop">
-                    {index + 1}
-                  </div>
-                  <h3 className="text-lg font-serif text-slate-900 mb-2 group-hover:text-amber-700 transition-colors">{coach.title}</h3>
-                  <p className="text-xs text-slate-700 leading-relaxed">{coach.desc}</p>
-                </div>
-                <div className="mt-6 flex items-center gap-1 text-xs text-amber-700 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                  Learn more <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <InternationalCourses />
 
       {/* Universities */}
       <section id="universities" className="relative z-10 py-24 border-t border-stone-300/60">
