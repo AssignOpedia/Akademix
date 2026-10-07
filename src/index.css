@@ -168,9 +168,22 @@ img {
   transform: translateY(-1px);
 }
 
-.btn-donate:is(:focus, :focus-visible, :active) {
+.btn-donate:active {
+  transform: translateY(0);
   outline: none;
-  box-shadow: 0 0 0 3px var(--btn-bg-color), 0 0 0 6px var(--btn-bg-2);
+}
+
+.btn-donate:focus {
+  outline: none;
+}
+
+.btn-donate:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.btn-donate:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #b8873b;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -242,7 +242,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={currentUser ? () => navigate('/profile') : () => openAuthDialog('signup')}
-              className={currentUser ? 'px-2 py-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-950' : 'btn-donate'}
+              className={currentUser ? 'px-2 py-2 text-sm font-semibold text-slate-800 transition-colors hover:text-slate-950' : 'btn-donate outline-none focus:outline-none'}
             >
               {currentUser ? 'Profile' : 'Sign Up'}
             </button>
