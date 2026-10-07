@@ -10,6 +10,7 @@ import Courses from '../pages/Courses/Courses'
 import CourseDetails from '../pages/CourseDetails/CourseDetails'
 import Mentoring from '../pages/Mentoring/Mentoring'
 import CareerGuidance from '../pages/CareerGuidance/CareerGuidance'
+import ServiceEnquiryForm from '../pages/CareerGuidance/ServiceEnquiryForm'
 import About from '../pages/About/About'
 import AssignmentGuidance from '../pages/AssignmentGuidance/AssignmentGuidance'
 import Profile from '../pages/Profile/Profile'
@@ -34,6 +35,7 @@ export default function AppRoutes() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/assignment-guidance" element={<AssignmentGuidance />} />
       <Route path="/career-guidance" element={<CareerGuidance />} />
+      <Route path="/career-guidance/enquiry/:serviceSlug" element={<ServiceEnquiryForm />} />
       <Route path="/about" element={<About />} />
       <Route path="/blogs" element={<Blogs />} />
       <Route path="*" element={<Home />} />

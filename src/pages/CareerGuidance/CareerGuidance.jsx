@@ -1,59 +1,7 @@
 import { Link } from 'react-router-dom'
-import {
-  ArrowRight,
-  Code2,
-  FileEdit,
-  FileText,
-  Globe,
-  GraduationCap,
-  Languages,
-  Layers,
-  Sparkles,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import CareerExplorer from '../../components/CareerExplorer/CareerExplorer'
-
-const academicServices = [
-  {
-    title: 'Grooming',
-    description: 'Develop polished professional etiquette, confident body language, and interview-ready personal presentation.',
-    icon: Sparkles,
-  },
-  {
-    title: 'Spoken English',
-    description: 'Enhance oral fluency, diction, and communication confidence for academic discussions and high-stakes interviews.',
-    icon: Languages,
-  },
-  {
-    title: 'CV/Resume Preparation',
-    description: 'Craft ATS-compliant, industry-tailored resumes that effectively spotlight your achievements and potential.',
-    icon: FileText,
-  },
-  {
-    title: 'Cover Letter/Page Preparation',
-    description: 'Write persuasive, role-targeted cover letters and professional executive bios that capture recruiter attention.',
-    icon: FileEdit,
-  },
-  {
-    title: 'Web Content Writing',
-    description: 'Master digital copywriting, structured web articles, and audience-focused online narratives with modern SEO practices.',
-    icon: Globe,
-  },
-  {
-    title: 'Product Content Writing',
-    description: 'Create concise UX microcopy, feature messaging, and engaging product documentation that guides users seamlessly.',
-    icon: Layers,
-  },
-  {
-    title: 'Technical Workshops',
-    description: 'Gain practical expertise through intensive, hands-on masterclasses covering industry tools and core technologies.',
-    icon: Code2,
-  },
-  {
-    title: 'Customised Courses',
-    description: 'Pursue personalized curricula and flexible learning tracks tailored specifically to your academic and career goals.',
-    icon: GraduationCap,
-  },
-]
+import { academicServices } from '../../data/academicServices'
 
 export default function CareerGuidance() {
   return (
@@ -73,9 +21,11 @@ export default function CareerGuidance() {
           {academicServices.map((service) => {
             const Icon = service.icon
             return (
-              <article
-                key={service.title}
-                className="card group flex flex-col justify-between p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg"
+              <Link
+                key={service.slug}
+                to={`/career-guidance/enquiry/${service.slug}`}
+                className="card group flex flex-col justify-between p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 block cursor-pointer"
+                aria-label={`Enquire about ${service.title}`}
               >
                 <div>
                   <div
@@ -91,14 +41,23 @@ export default function CareerGuidance() {
                     {service.description}
                   </p>
                 </div>
-              </article>
+
+                <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-brass-dark">
+                  <span>Enquire service</span>
+                  <ArrowRight
+                    size={14}
+                    className="transition-transform duration-200 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </div>
+              </Link>
             )
           })}
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link to="/assignment-guidance" className="btn-primary">
-            Enquire Now <ArrowRight size={16} />
+            General Guidance <ArrowRight size={16} />
           </Link>
         </div>
       </section>
