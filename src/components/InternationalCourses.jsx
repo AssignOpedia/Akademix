@@ -21,7 +21,6 @@ export default function InternationalCourses() {
     setSelectedCourse(null)
     setSubmitted(false)
   }
-
   return <section id="coaching" className="relative z-10 border-t border-stone-300/60 bg-white/45 py-16 backdrop-blur-xl">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -36,7 +35,7 @@ export default function InternationalCourses() {
         <p className="text-xs font-medium text-slate-600">{courses.length} courses | moving continuously across all destinations</p>
         <span className="text-xs text-slate-500">Pause by hovering over the cards</span>
       </div>
-      <div className="overflow-hidden" aria-label="International courses from Australia through Bahrain">
+      <div className="overflow-hidden py-3" aria-label="International courses from Australia through Bahrain" style={{ maskImage: 'linear-gradient(to right, transparent, black 3%, black 97%, transparent)' }}>
         <div className="flex w-max shrink-0 gap-3 whitespace-nowrap animate-ticker transform-gpu hover:[animation-play-state:paused] motion-reduce:animate-none" style={{ animationDuration: '200s' }}>
           {[...courses, ...courses].map((course, index) => {
             const isDuplicate = index >= courses.length
@@ -60,12 +59,12 @@ export default function InternationalCourses() {
 
     {selectedCourse && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) closeDetails() }}>
       <section role="dialog" aria-modal="true" aria-labelledby="course-dialog-title" className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl sm:p-7">
-        <div className="flex items-start justify-between gap-4"><div><span className="text-xs font-bold uppercase tracking-widest text-amber-700">{selectedCourse.country} · {selectedCourse.field}</span><h3 id="course-dialog-title" className="mt-2 font-serif text-2xl leading-tight text-slate-900">{selectedCourse.courseName}</h3><p className="mt-1 text-sm font-semibold text-slate-700">{selectedCourse.university}</p></div><button type="button" onClick={closeDetails} aria-label="Close details" className="rounded-full border border-stone-200 p-2 text-slate-600 hover:bg-stone-50"><X size={18}/></button></div>
+        <div className="flex items-start justify-between gap-4"><div><span className="text-xs font-bold uppercase tracking-widest text-amber-700">{selectedCourse.country} ï¿½ {selectedCourse.field}</span><h3 id="course-dialog-title" className="mt-2 font-serif text-2xl leading-tight text-slate-900">{selectedCourse.courseName}</h3><p className="mt-1 text-sm font-semibold text-slate-700">{selectedCourse.university}</p></div><button type="button" onClick={closeDetails} aria-label="Close details" className="rounded-full border border-stone-200 p-2 text-slate-600 hover:bg-stone-50"><X size={18}/></button></div>
         <div className="my-5 grid grid-cols-2 gap-3 rounded-2xl bg-amber-50/70 p-4 text-xs sm:grid-cols-3">{[['Level', selectedCourse.level], ['Duration', selectedCourse.duration], ['Tuition fee', selectedCourse.tuitionFee], ['Intake', selectedCourse.intake], ['English requirement', selectedCourse.englishRequirement], ['Application status', selectedCourse.applicationStatus], ['Location', selectedCourse.location]].map(([label, value]) => <div key={label}><p className="mb-1 font-bold uppercase tracking-wide text-slate-500">{label}</p><p className="text-slate-800">{value}</p></div>)}</div>
         {submitted ? <div role="status" className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">Thanks for your interest. Use the official course page below to confirm availability and contact the university directly.</div> : <form onSubmit={(event) => { event.preventDefault(); setSubmitted(true) }} className="space-y-3">
           <h4 className="font-serif text-xl text-slate-900">Request course guidance</h4>
           <div className="grid gap-3 sm:grid-cols-2"><label className="text-xs font-semibold text-slate-700">Your name<input required name="name" autoComplete="name" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm font-normal outline-none focus:border-amber-500" placeholder="Full name"/></label><label className="text-xs font-semibold text-slate-700">Email address<input required type="email" name="email" autoComplete="email" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm font-normal outline-none focus:border-amber-500" placeholder="you@example.com"/></label></div>
-          <label className="block text-xs font-semibold text-slate-700">What would you like help with?<textarea required name="message" rows="3" className="mt-1 w-full resize-y rounded-lg border border-stone-300 px-3 py-2.5 text-sm font-normal outline-none focus:border-amber-500" placeholder="Ask about eligibility, fees, or applying…"/></label>
+          <label className="block text-xs font-semibold text-slate-700">What would you like help with?<textarea required name="message" rows="3" className="mt-1 w-full resize-y rounded-lg border border-stone-300 px-3 py-2.5 text-sm font-normal outline-none focus:border-amber-500" placeholder="Ask about eligibility, fees, or applyingï¿½"/></label>
           <p className="text-[11px] text-slate-500">This form is a local demo and does not send or store your information.</p>
           <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-between"><a href={selectedCourse.officialUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 px-4 py-2.5 text-xs font-bold text-slate-700 hover:border-amber-500">Official course page <ExternalLink size={14}/></a><button type="submit" className="rounded-lg bg-amber-500 px-5 py-2.5 text-xs font-bold text-white hover:bg-amber-600">Submit request</button></div>
         </form>}
