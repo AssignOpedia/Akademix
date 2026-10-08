@@ -16,6 +16,7 @@ import About from '../pages/About/About'
 import AssignmentGuidance from '../pages/AssignmentGuidance/AssignmentGuidance'
 import Profile from '../pages/Profile/Profile'
 import Blogs from '../pages/Blogs/Blogs'
+import AdminEnquiries from '../pages/Admin/AdminEnquiries'
 
 export default function AppRoutes() {
   return (
@@ -40,6 +41,7 @@ export default function AppRoutes() {
       <Route path="/career-guidance/enquiry/:serviceSlug" element={<ServiceEnquiryForm />} />
       <Route path="/about" element={<About />} />
       <Route path="/blogs" element={<Blogs />} />
+      <Route path="/admin/enquiries" element={<AdminEnquiries />} />
       <Route path="*" element={<Home />} />
     </Routes>
   )

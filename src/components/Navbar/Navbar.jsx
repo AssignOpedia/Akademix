@@ -40,7 +40,17 @@ async function hashPassword(password, salt) {
 }
 
 function saveSignedInSession(user) {
-  const session = { name: user.name, email: user.email, role: user.role || 'Student', phone: user.phone || '', dateOfBirth: user.dateOfBirth || '', gender: user.gender || '', country: user.country || user.location || '' }
+  const session = {
+    id: user.id || user._id || null,
+    name: user.name,
+    email: user.email,
+    role: user.role || 'Student',
+    phone: user.phone || '',
+    dateOfBirth: user.dateOfBirth || '',
+    gender: user.gender || '',
+    country: user.country || user.location || '',
+    token: user.token || null,
+  }
   localStorage.setItem(sessionStorageKey, JSON.stringify(session))
   localStorage.setItem('akademix-student-profile', JSON.stringify(session))
   return session
@@ -114,6 +124,54 @@ export default function Navbar() {
     const email = profileEmail.trim().toLowerCase()
 
     try {
+      // 1. Attempt serverless authentication to receive real JWT token
+      try {
+        const authRes = await fetch(`/api/auth/${authMode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            authMode === 'signup'
+              ? {
+                  name: profileName.trim(),
+                  email,
+                  password,
+                  phone: authorRole === 'Student' ? phone.trim() : '',
+                }
+              : { email, password }
+          ),
+        })
+
+        if (authRes.ok) {
+          const authData = await authRes.json()
+          if (authData.token && authData.user) {
+            const session = {
+              id: authData.user.id,
+              name: authData.user.name,
+              email: authData.user.email,
+              role: authData.user.role,
+              phone: authData.user.phone || '',
+              token: authData.token,
+            }
+            localStorage.setItem(sessionStorageKey, JSON.stringify(session))
+            localStorage.setItem('akademix-student-profile', JSON.stringify(session))
+            setProfile(session)
+            setCurrentUser(session)
+            setProfileOpen(false)
+            setPassword('')
+            window.dispatchEvent(new Event('akademix-auth-change'))
+            navigate(authData.user.role === 'admin' ? '/admin/enquiries' : authDestination)
+            return
+          }
+        } else if (authRes.status === 401 || authRes.status === 409) {
+          const err = await authRes.json().catch(() => ({}))
+          setAuthNotice(err.message || 'Authentication failed.')
+          return
+        }
+      } catch {
+        // Fallback to local accounts if backend is unreachable
+      }
+
+      // 2. Fallback: Local storage accounts
       const accounts = readStoredAccounts()
       if (authMode === 'signup') {
         if (accounts.some((account) => account.email === email)) {
@@ -202,7 +260,7 @@ export default function Navbar() {
               DESKTOP NAVIGATION
           ========================== */}
           <nav className="hidden xl:flex flex-1 items-center justify-center gap-4 2xl:gap-6">
-            {links.map((l) => (
+            {(currentUser?.role === 'admin' ? [...links, { to: '/admin/enquiries', label: 'Admin' }] : links).map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
@@ -318,7 +376,7 @@ export default function Navbar() {
           <nav className="max-w-7xl mx-auto px-6 py-5 flex flex-col gap-1">
 
             {/* Mobile Navigation Links */}
-            {links.map((l) => (
+            {(currentUser?.role === 'admin' ? [...links, { to: '/admin/enquiries', label: 'Admin' }] : links).map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
