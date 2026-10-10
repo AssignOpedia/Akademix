@@ -1,100 +1,274 @@
+
+import { randomUUID } from 'node:crypto'
+import { basename, extname } from 'node:path'
+import { v2 as cloudinary } from 'cloudinary'
+
 import { connectDB } from './_lib/db.js'
-import { Enquiry } from './_lib/models/Enquiry.js'
-import { User } from './_lib/models/User.js'
+import Enquiry from './_lib/models/Enquiry.js'
 import { verifyToken } from './_lib/auth.js'
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.trim(),
+  api_key: process.env.CLOUDINARY_API_KEY?.trim(),
+  api_secret: process.env.CLOUDINARY_API_SECRET?.trim(),
+})
+
+const MAX_FILE_SIZE = 3 * 1024 * 1024
+const CLOUDINARY_ENV_KEYS = [
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
+]
+
+const ALLOWED_TYPES = {
+  '.pdf': ['application/pdf', 'application/octet-stream'],
+  '.doc': [
+    'application/msword',
+    'application/octet-stream',
+  ],
+  '.docx': [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/octet-stream',
+  ],
+}
+
+function uploadToCloudinary(buffer, filename) {
+  const extension = extname(filename).toLowerCase()
+  const safeName = basename(filename, extension)
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .slice(0, 80) || 'document'
+
+  const publicId = `enquiries/${safeName}-${randomUUID()}${extension}`
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'raw',
+        public_id: publicId,
+        overwrite: false,
+      },
+      (error, result) => {
+        if (error) return reject(error)
+        if (!result?.secure_url) {
+          return reject(new Error('Cloudinary did not return a file URL.'))
+        }
+
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+        })
+      }
+    )
+
+    stream.end(buffer)
+  })
+}
+
+function getAttachmentBuffer(rawAttachment) {
+  if (!rawAttachment) return null
+
+  const filename =
+    typeof rawAttachment.filename === 'string'
+      ? rawAttachment.filename.trim()
+      : ''
+
+  const contentType =
+    typeof rawAttachment.contentType === 'string'
+      ? rawAttachment.contentType.trim().toLowerCase()
+      : ''
+
+  const encodedData =
+    typeof rawAttachment.data === 'string'
+      ? rawAttachment.data
+      : ''
+
+  const extension = extname(filename).toLowerCase()
+
+  if (
+    !filename ||
+    filename.length > 255 ||
+    !ALLOWED_TYPES[extension] ||
+    !ALLOWED_TYPES[extension].includes(contentType) ||
+    !encodedData
+  ) {
+    throw new Error('Attach a valid PDF, DOC, or DOCX document.')
+  }
+
+  if (
+    typeof rawAttachment.size !== 'number' ||
+    !Number.isSafeInteger(rawAttachment.size) ||
+    rawAttachment.size <= 0 ||
+    rawAttachment.size > MAX_FILE_SIZE
+  ) {
+    throw new Error('The document must be 3 MB or smaller.')
+  }
+
+  // Check Base64 syntax and decode the file.
+  if (
+    encodedData.length > Math.ceil(MAX_FILE_SIZE * 4 / 3) + 4 ||
+    !/^[A-Za-z0-9+/]+={0,2}$/.test(encodedData) ||
+    encodedData.length % 4 !== 0
+  ) {
+    throw new Error('The uploaded document data is invalid.')
+  }
+
+  const buffer = Buffer.from(encodedData, 'base64')
+
+  if (
+    buffer.length !== rawAttachment.size ||
+    buffer.length === 0 ||
+    buffer.length > MAX_FILE_SIZE
+  ) {
+    throw new Error('The uploaded document could not be verified.')
+  }
+
+  return {
+    filename,
+    contentType,
+    size: buffer.length,
+    buffer,
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({
       success: false,
-      message: `Method ${req.method} not allowed. Only POST is supported.`,
+      message: 'Method not allowed.',
+    })
+  }
+
+  if (!process.env.MONGODB_URI) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error: MONGODB_URI is missing.',
     })
   }
 
   try {
+    const body =
+      typeof req.body === 'string'
+        ? JSON.parse(req.body)
+        : req.body || {}
+
+    const {
+      serviceSlug,
+      serviceTitle,
+      commonFields = {},
+      attachment: rawAttachment,
+    } = body
+
+    const name = String(
+      commonFields.fullName || body.fullName || body.name || ''
+    ).trim()
+
+    const email = String(
+      commonFields.email || body.email || ''
+    ).trim().toLowerCase()
+
+    const phone = String(
+      commonFields.phone || body.phone || ''
+    ).trim()
+
+    if (!serviceSlug || !serviceTitle) {
+      return res.status(400).json({
+        success: false,
+        message: 'Service information is required.',
+      })
+    }
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and phone are required.',
+      })
+    }
+
+    // Validate and decode the optional file.
+    let file = null
+
+    try {
+      file = getAttachmentBuffer(rawAttachment)
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      })
+    }
+
+    const missingCloudinaryKeys = CLOUDINARY_ENV_KEYS.filter(
+      (key) => !process.env[key]?.trim()
+    )
+
+    if (file && missingCloudinaryKeys.length > 0) {
+      return res.status(500).json({
+        success: false,
+        message: `Server configuration error: missing ${missingCloudinaryKeys.join(', ')}.`,
+      })
+    }
+
+    // Connect before uploading so database configuration errors
+    // are caught before creating a Cloudinary asset.
     await connectDB()
 
-    const body = req.body || {}
+    // Upload the actual document to Cloudinary.
+    let uploadedAttachment = null
 
-    // Support both structured frontend payload (commonFields) and direct field payloads
-    const common = body.commonFields || {}
-    let name = (common.fullName || common.name || body.name || '').toString().trim()
-    let email = (common.email || body.email || '').toString().trim().toLowerCase()
-    let phone = (common.phone || body.phone || '').toString().trim()
-    const serviceSlug = (body.serviceSlug || '').toString().trim()
-    const serviceTitle = (body.serviceTitle || '').toString().trim()
-    const answers = body.serviceSpecificAnswers || body.answers || {}
+    if (file) {
+      const uploaded = await uploadToCloudinary(
+        file.buffer,
+        file.filename
+      )
 
-    if (body.additionalNotes && typeof body.additionalNotes === 'string') {
-      answers.additionalNotes = body.additionalNotes.trim()
-    }
-
-    let cvUrl = body.cvUrl || answers.existingCv || null
-    if (typeof cvUrl !== 'string') {
-      cvUrl = null
-    }
-
-    let userId = null
-
-    // Check for authenticated user token
-    const tokenPayload = verifyToken(req)
-    if (tokenPayload && tokenPayload.userId) {
-      try {
-        const verifiedUser = await User.findById(tokenPayload.userId)
-        if (verifiedUser) {
-          userId = verifiedUser._id
-          // Server-side authoritative user info
-          name = verifiedUser.name
-          email = verifiedUser.email.toLowerCase()
-          if (verifiedUser.phone) {
-            phone = verifiedUser.phone
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching authenticated user for enquiry:', err)
+      uploadedAttachment = {
+        filename: file.filename,
+        contentType: file.contentType,
+        size: file.size,
+        url: uploaded.url,
+        publicId: uploaded.publicId,
       }
     }
 
-    // Input Validation
-    if (!serviceSlug) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed: serviceSlug is required.',
-      })
+    let userId = null
+    const authHeader =
+      req.headers.authorization ||
+      (body.authToken ? `Bearer ${body.authToken}` : null)
+
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const decoded = verifyToken(authHeader.slice(7))
+        userId = decoded?.id || decoded?.userId || null
+      } catch {
+        // Invalid optional token: retain a guest enquiry.
+      }
     }
 
-    if (!serviceTitle) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed: serviceTitle is required.',
-      })
+    // Do not trust an arbitrary client-supplied user ID.
+    // Only use the ID from a verified token.
+
+    const submittedAtIST = new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'medium',
+      timeStyle: 'medium',
+      hour12: true,
+    }).format(new Date())
+
+    const rawAnswers =
+      body.serviceSpecificAnswers || body.answers || {}
+
+    const cleanAnswers = { ...rawAnswers }
+
+    for (const key of [
+      'existingCv',
+      'cvFile',
+      'cv',
+      'resume',
+      'file',
+    ]) {
+      delete cleanAnswers[key]
     }
 
-    if (!name || name.length < 2) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed: A valid full name is required.',
-      })
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!email || !emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed: A valid email address is required.',
-      })
-    }
-
-    const digitsOnly = phone.replace(/\D/g, '')
-    if (!phone || digitsOnly.length < 10) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed: A valid 10-digit phone number is required.',
-      })
-    }
-
-    // Create enquiry
     const enquiry = await Enquiry.create({
       serviceSlug,
       serviceTitle,
@@ -102,23 +276,32 @@ export default async function handler(req, res) {
       name,
       email,
       phone,
-      answers,
-      cvUrl,
+      answers: cleanAnswers,
+      cvUrl: uploadedAttachment?.url || null,
+      attachment: uploadedAttachment,
+      submittedAtIST,
       status: 'new',
     })
 
     return res.status(201).json({
       success: true,
-      id: enquiry._id,
-      message: 'Enquiry submitted successfully',
+      message: 'Enquiry submitted successfully.',
+      data: {
+        id: enquiry._id,
+        serviceSlug: enquiry.serviceSlug,
+        serviceTitle: enquiry.serviceTitle,
+        cvUrl: enquiry.cvUrl,
+        attachment: enquiry.attachment,
+        submittedAtIST: enquiry.submittedAtIST,
+        createdAt: enquiry.createdAt,
+      },
     })
   } catch (error) {
-    // Log real error on server only, return generic message to client
-    console.error('[API /api/enquiries] Error creating enquiry:', error)
+    console.error('[API /api/enquiries] Error:', error)
+
     return res.status(500).json({
       success: false,
-      message: 'An unexpected server error occurred while processing your enquiry. Please try again later.',
+      message: 'Unable to submit the enquiry. Please try again.',
     })
   }
 }
-

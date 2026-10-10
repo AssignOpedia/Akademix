@@ -168,6 +168,29 @@ export default function AdminEnquiries() {
     }
   }
 
+  const downloadAttachment = async (item) => {
+    try {
+      const response = await fetch(`/api/admin/attachment?id=${encodeURIComponent(item._id)}`, {
+        headers: currentUser?.token ? { Authorization: `Bearer ${currentUser.token}` } : {},
+      })
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.message || 'Download failed.')
+      }
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = item.attachment?.filename || 'enquiry-attachment'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      alert(error.message || 'The attached document could not be downloaded.')
+    }
+  }
+
   // Download CSV export with Bearer token
   const handleExportCSV = async () => {
     if (!currentUser?.token) return
@@ -572,12 +595,27 @@ export default function AdminEnquiries() {
                       <p className="text-sm text-slate mb-6">No specific answers provided.</p>
                     )}
 
-                    {item.cvUrl && (
-                      <div className="rounded-xl border border-line bg-amber-50/60 p-4 flex items-center justify-between">
+                    {(item.attachment?.filename || item.attachment?.url || item.cvUrl) && (
+                      <div className="rounded-xl border border-line bg-amber-50/60 p-4 flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <span className="text-xs text-slate block">Attached CV</span>
-                          <span className="font-semibold text-ink">{item.cvUrl}</span>
+                          <span className="text-xs text-slate block">Attached document</span>
+                          <span className="font-semibold text-ink">{item.attachment?.filename || 'Attached CV'}</span>
+                          {item.attachment?.size && <span className="ml-2 text-xs text-slate">({(item.attachment.size / 1024 / 1024).toFixed(2)} MB)</span>}
                         </div>
+                        {(item.attachment?.url || item.cvUrl) ? (
+                          <a
+                            href={item.attachment?.url || item.cvUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-secondary text-xs h-9 px-4"
+                          >
+                            <Download size={15} /> Open file
+                          </a>
+                        ) : (
+                          <button type="button" onClick={() => downloadAttachment(item)} className="btn-secondary text-xs h-9 px-4">
+                            <Download size={15} /> Download file
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -684,4 +722,3 @@ export default function AdminEnquiries() {
     </div>
   )
 }
-

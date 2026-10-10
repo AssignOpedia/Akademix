@@ -18,6 +18,7 @@ import { showFormSubmissionAlert } from '../../utils/formSubmissionAlert'
 
 const SESSION_KEY = 'akademix-auth-session'
 const PROFILE_KEY = 'akademix-student-profile'
+const MAX_UPLOAD_FILE_SIZE = 3 * 1024 * 1024
 
 export default function ServiceEnquiryForm() {
   const { serviceSlug } = useParams()
@@ -59,6 +60,8 @@ export default function ServiceEnquiryForm() {
     }
   }, [])
 
+
+
   const userHasName = Boolean(user?.name && user.name.trim())
   const userHasEmail = Boolean(user?.email && user.email.trim())
   const userHasPhone = Boolean(user?.phone && user.phone.trim())
@@ -81,12 +84,12 @@ export default function ServiceEnquiryForm() {
       return
     }
 
-    // Validate file size (max 5MB)
-    const maxSizeBytes = 5 * 1024 * 1024
+    // Base64 is used only to transport the file to the API; Cloudinary stores it.
+    const maxSizeBytes = MAX_UPLOAD_FILE_SIZE
     if (file.size > maxSizeBytes) {
       setErrors((prev) => ({
         ...prev,
-        existingCv: 'File size exceeds 5 MB. Please upload a smaller document.',
+        existingCv: 'File size exceeds 3 MB. Please upload a smaller document.',
       }))
       setSelectedFile(null)
       e.target.value = ''
@@ -109,6 +112,7 @@ export default function ServiceEnquiryForm() {
 
     setErrors((prev) => ({ ...prev, existingCv: '' }))
     setSelectedFile({
+      file,
       name: file.name,
       size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
       type: file.type,
@@ -167,15 +171,57 @@ export default function ServiceEnquiryForm() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSubmitError('')
-
-    if (!validate()) {
+  const readFileForUpload = (file) => new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null)
       return
     }
 
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === 'string' ? reader.result : ''
+      const base64 = dataUrl.split(',')[1]
+      if (!base64) {
+        reject(new Error('We could not read the selected document. Please choose it again.'))
+        return
+      }
+      resolve({
+        filename: file.name,
+        contentType: file.type || 'application/octet-stream',
+        size: file.size,
+        data: base64,
+      })
+    }
+    reader.onerror = () => reject(new Error('We could not read the selected document. Please choose it again.'))
+    reader.readAsDataURL(file)
+  })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Keep this guard at the start of the handler: native form submission must
+    // never be allowed to navigate away from this React route.
+    if (isSubmitting || !validate()) return
+
     setIsSubmitting(true)
+    setSubmitError('')
+
+    // Use the exact File selected by this form. Querying the DOM here can pick
+    // the wrong input or lose the browser-managed file selection after a render.
+    const fileToUpload = selectedFile?.file || null
+
+    // Serialize the file for transport to the API, which uploads it to Cloudinary.
+    let attachment = null
+    if (fileToUpload) {
+      try {
+        attachment = await readFileForUpload(fileToUpload)
+      } catch (err) {
+        setIsSubmitting(false)
+        setSubmitError(err.message || 'Your document could not be prepared. Please try again.')
+        return
+      }
+    }
 
     const commonFields = {
       fullName: userHasName ? user.name : formValues.fullName.trim(),
@@ -203,6 +249,7 @@ export default function ServiceEnquiryForm() {
       userId: user?.id || user?.email || null,
       authToken: user?.token || null,
       timestamp: new Date().toISOString(),
+      attachment,
     }
 
     try {
@@ -253,10 +300,10 @@ export default function ServiceEnquiryForm() {
   // Not Found view if invalid slug
   if (!config) {
     return (
-      <div className="container-content py-16">
-        <div className="card mx-auto max-w-xl p-8 text-center">
+      <div className="py-16 container-content">
+        <div className="max-w-xl p-8 mx-auto text-center card">
           <AlertCircle size={44} className="mx-auto text-amber-700" />
-          <h1 className="mt-4 font-display text-3xl font-semibold text-ink">
+          <h1 className="mt-4 text-3xl font-semibold font-display text-ink">
             Service Not Found
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate">
@@ -264,7 +311,7 @@ export default function ServiceEnquiryForm() {
           </p>
           <Link
             to="/career-guidance"
-            className="btn-primary mt-6 inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 mt-6 btn-primary"
           >
             <ArrowLeft size={16} /> Return to Career Guidance
           </Link>
@@ -278,50 +325,50 @@ export default function ServiceEnquiryForm() {
   // Success Confirmation Screen
   if (isSubmitted) {
     return (
-      <div className="container-content py-16">
+      <div className="py-16 container-content">
         <section
           role="status"
           aria-live="polite"
-          className="card mx-auto max-w-2xl p-8 sm:p-10 text-center"
+          className="max-w-2xl p-8 mx-auto text-center card sm:p-10"
         >
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-2xl bg-emerald-100 text-emerald-800">
             <CheckCircle2 size={36} />
           </div>
 
-          <p className="eyebrow mt-5 mb-1">Enquiry Received</p>
-          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-ink">
+          <p className="mt-5 mb-1 eyebrow">Enquiry Received</p>
+          <h1 className="text-3xl font-semibold font-display sm:text-4xl text-ink">
             Thanks! We&apos;ll contact you within 1-2 working days
           </h1>
           <p className="mt-3 text-base leading-relaxed text-slate">
-            Your enquiry for <strong className="text-ink font-semibold">{config.title}</strong> has been successfully recorded. An academic specialist will review your details and reach out shortly.
+            Your enquiry for <strong className="font-semibold text-ink">{config.title}</strong> has been successfully recorded. An academic specialist will review your details and reach out shortly.
           </p>
 
           {/* Submission summary snippet */}
-          <div className="mt-8 rounded-2xl border border-line bg-stone/50 p-6 text-left">
-            <p className="text-xs font-semibold uppercase tracking-wider text-brass-dark mb-3">
+          <div className="p-6 mt-8 text-left border rounded-2xl border-line bg-stone/50">
+            <p className="mb-3 text-xs font-semibold tracking-wider uppercase text-brass-dark">
               Submission Summary
             </p>
-            <div className="grid sm:grid-cols-2 gap-3 text-sm">
+            <div className="grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <span className="text-xs text-slate block">Name</span>
+                <span className="block text-xs text-slate">Name</span>
                 <span className="font-medium text-ink">{submittedData?.commonFields?.fullName}</span>
               </div>
               <div>
-                <span className="text-xs text-slate block">Email</span>
+                <span className="block text-xs text-slate">Email</span>
                 <span className="font-medium text-ink">{submittedData?.commonFields?.email}</span>
               </div>
               <div>
-                <span className="text-xs text-slate block">Phone</span>
+                <span className="block text-xs text-slate">Phone</span>
                 <span className="font-medium text-ink">{submittedData?.commonFields?.phone}</span>
               </div>
               <div>
-                <span className="text-xs text-slate block">Service</span>
+                <span className="block text-xs text-slate">Service</span>
                 <span className="font-medium text-ink">{config.title}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
             <Link to="/career-guidance" className="btn-primary">
               <ArrowLeft size={16} /> Back to Career Guidance
             </Link>
@@ -339,12 +386,12 @@ export default function ServiceEnquiryForm() {
   }
 
   return (
-    <div className="container-content py-12 sm:py-16 max-w-4xl">
+    <div className="max-w-4xl py-12 container-content sm:py-16">
       {/* Navigation Breadcrumb / Back Link */}
       <nav aria-label="Breadcrumb" className="mb-6">
         <Link
           to="/career-guidance"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate hover:text-ink transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-medium transition-colors text-slate hover:text-ink"
         >
           <ArrowLeft size={16} /> Back to Career Guidance
         </Link>
@@ -353,31 +400,31 @@ export default function ServiceEnquiryForm() {
       {/* Page Header */}
       <header className="mb-8">
         <div className="flex items-center gap-3.5 mb-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100/70 text-brass-dark">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100/70 text-brass-dark">
             <ServiceIcon size={24} />
           </div>
           <div>
             <p className="eyebrow">Service Enquiry</p>
-            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-ink">
+            <h1 className="text-3xl font-semibold font-display sm:text-4xl text-ink">
               {config.title}
             </h1>
           </div>
         </div>
-        <p className="text-slate text-base sm:text-lg max-w-2xl leading-relaxed">
+        <p className="max-w-2xl text-base leading-relaxed text-slate sm:text-lg">
           {config.intro} Fill out the details below to request customized guidance.
         </p>
       </header>
 
       {/* Authenticated User Status Summary Card */}
       {user ? (
-        <div className="mb-8 rounded-2xl border border-line bg-gradient-to-br from-white/95 via-stone/40 to-white/90 p-5 shadow-sm">
+        <div className="p-5 mb-8 border shadow-sm rounded-2xl border-line bg-gradient-to-br from-white/95 via-stone/40 to-white/90">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brass/15 text-brass-dark font-display text-base font-bold">
+              <div className="flex items-center justify-center text-base font-bold h-11 w-11 rounded-xl bg-brass/15 text-brass-dark font-display">
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-brass-dark">
+                <p className="text-xs font-semibold tracking-wider uppercase text-brass-dark">
                   Submitting as
                 </p>
                 <p className="text-sm font-medium text-ink">
@@ -405,7 +452,7 @@ export default function ServiceEnquiryForm() {
                   localStorage.removeItem(SESSION_KEY)
                   window.dispatchEvent(new Event('akademix-auth-change'))
                 }}
-                className="text-slate hover:text-ink cursor-pointer hover:underline"
+                className="cursor-pointer text-slate hover:text-ink hover:underline"
               >
                 Not you?
               </button>
@@ -415,19 +462,19 @@ export default function ServiceEnquiryForm() {
       ) : null}
 
       {/* Main Form Card */}
-      <div className="card p-6 sm:p-10">
+      <div className="p-6 card sm:p-10">
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Section: Contact Information */}
           {(!userHasName || !userHasEmail || !userHasPhone) && (
             <div>
-              <h2 className="font-display text-xl font-semibold text-ink mb-1">
+              <h2 className="mb-1 text-xl font-semibold font-display text-ink">
                 Contact Information
               </h2>
-              <p className="text-xs text-slate mb-4">
+              <p className="mb-4 text-xs text-slate">
                 We will use these details to contact you regarding your enquiry.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {!userHasName && (
                   <div>
                     <label
@@ -446,11 +493,10 @@ export default function ServiceEnquiryForm() {
                       placeholder="e.g. John Doe"
                       aria-invalid={Boolean(errors.fullName)}
                       aria-describedby={errors.fullName ? 'error-fullName' : undefined}
-                      className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${
-                        errors.fullName
-                          ? 'border-red-400 bg-red-50/30 focus:border-red-500'
-                          : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
-                      }`}
+                      className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${errors.fullName
+                        ? 'border-red-400 bg-red-50/30 focus:border-red-500'
+                        : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
+                        }`}
                     />
                     {errors.fullName && (
                       <p id="error-fullName" role="alert" className="mt-1 text-xs text-red-600">
@@ -478,11 +524,10 @@ export default function ServiceEnquiryForm() {
                       placeholder="e.g. john@example.com"
                       aria-invalid={Boolean(errors.email)}
                       aria-describedby={errors.email ? 'error-email' : undefined}
-                      className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${
-                        errors.email
-                          ? 'border-red-400 bg-red-50/30 focus:border-red-500'
-                          : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
-                      }`}
+                      className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${errors.email
+                        ? 'border-red-400 bg-red-50/30 focus:border-red-500'
+                        : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
+                        }`}
                     />
                     {errors.email && (
                       <p id="error-email" role="alert" className="mt-1 text-xs text-red-600">
@@ -510,11 +555,10 @@ export default function ServiceEnquiryForm() {
                       placeholder="10-digit mobile number"
                       aria-invalid={Boolean(errors.phone)}
                       aria-describedby={errors.phone ? 'error-phone' : undefined}
-                      className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${
-                        errors.phone
-                          ? 'border-red-400 bg-red-50/30 focus:border-red-500'
-                          : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
-                      }`}
+                      className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${errors.phone
+                        ? 'border-red-400 bg-red-50/30 focus:border-red-500'
+                        : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
+                        }`}
                     />
                     {errors.phone && (
                       <p id="error-phone" role="alert" className="mt-1 text-xs text-red-600">
@@ -541,14 +585,14 @@ export default function ServiceEnquiryForm() {
 
           {/* Section: Service Requirements */}
           <div>
-            <h2 className="font-display text-xl font-semibold text-ink mb-1">
+            <h2 className="mb-1 text-xl font-semibold font-display text-ink">
               Service Requirements
             </h2>
-            <p className="text-xs text-slate mb-4">
+            <p className="mb-4 text-xs text-slate">
               Help us understand your exact requirements for {config.title}.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {config.fields.map((field) => {
                 const fieldId = `field-${field.name}`
                 const isError = Boolean(errors[field.name])
@@ -575,11 +619,10 @@ export default function ServiceEnquiryForm() {
                         onChange={handleInputChange}
                         aria-invalid={isError}
                         aria-describedby={isError ? `error-${field.name}` : undefined}
-                        className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors cursor-pointer ${
-                          isError
-                            ? 'border-red-400 bg-red-50/30 focus:border-red-500'
-                            : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
-                        }`}
+                        className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors cursor-pointer ${isError
+                          ? 'border-red-400 bg-red-50/30 focus:border-red-500'
+                          : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
+                          }`}
                       >
                         <option value="">Select an option</option>
                         {field.options.map((opt) => (
@@ -602,11 +645,10 @@ export default function ServiceEnquiryForm() {
                         min={field.type === 'date' ? new Date().toISOString().slice(0, 10) : undefined}
                         aria-invalid={isError}
                         aria-describedby={isError ? `error-${field.name}` : undefined}
-                        className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${
-                          isError
-                            ? 'border-red-400 bg-red-50/30 focus:border-red-500'
-                            : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
-                        }`}
+                        className={`h-11 w-full rounded-xl border px-3.5 text-sm text-ink outline-none transition-colors ${isError
+                          ? 'border-red-400 bg-red-50/30 focus:border-red-500'
+                          : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
+                          }`}
                       />
                     )}
 
@@ -614,11 +656,11 @@ export default function ServiceEnquiryForm() {
                     {field.type === 'file' && (
                       <div>
                         {selectedFile ? (
-                          <div className="flex items-center justify-between rounded-xl border border-line bg-stone/40 p-3">
+                          <div className="flex items-center justify-between p-3 border rounded-xl border-line bg-stone/40">
                             <div className="flex items-center gap-2.5 truncate">
                               <FileCheck size={18} className="text-emerald-700 shrink-0" />
-                              <div className="truncate text-xs">
-                                <span className="font-medium text-ink block truncate">{selectedFile.name}</span>
+                              <div className="text-xs truncate">
+                                <span className="block font-medium truncate text-ink">{selectedFile.name}</span>
                                 <span className="text-slate">{selectedFile.size}</span>
                               </div>
                             </div>
@@ -634,13 +676,12 @@ export default function ServiceEnquiryForm() {
                         ) : (
                           <label
                             htmlFor={fieldId}
-                            className={`flex flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center cursor-pointer transition-colors ${
-                              isError
-                                ? 'border-red-400 bg-red-50/20'
-                                : 'border-line hover:border-brass/70 bg-stone/20 hover:bg-stone/40'
-                            }`}
+                            className={`flex flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center cursor-pointer transition-colors ${isError
+                              ? 'border-red-400 bg-red-50/20'
+                              : 'border-line hover:border-brass/70 bg-stone/20 hover:bg-stone/40'
+                              }`}
                           >
-                            <Upload size={20} className="text-slate mb-1" />
+                            <Upload size={20} className="mb-1 text-slate" />
                             <span className="text-xs font-medium text-ink">
                               Click to choose a file
                             </span>
@@ -673,11 +714,10 @@ export default function ServiceEnquiryForm() {
                         placeholder={field.placeholder}
                         aria-invalid={isError}
                         aria-describedby={isError ? `error-${field.name}` : undefined}
-                        className={`w-full resize-y rounded-xl border p-3.5 text-sm text-ink outline-none transition-colors ${
-                          isError
-                            ? 'border-red-400 bg-red-50/30 focus:border-red-500'
-                            : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
-                        }`}
+                        className={`w-full resize-y rounded-xl border p-3.5 text-sm text-ink outline-none transition-colors ${isError
+                          ? 'border-red-400 bg-red-50/30 focus:border-red-500'
+                          : 'border-line bg-white focus:border-brass focus:ring-2 focus:ring-brass/20'
+                          }`}
                       />
                     )}
 
@@ -729,7 +769,7 @@ export default function ServiceEnquiryForm() {
           <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-line/70">
             <Link
               to="/career-guidance"
-              className="text-sm font-medium text-slate hover:text-ink transition-colors"
+              className="text-sm font-medium transition-colors text-slate hover:text-ink"
             >
               Cancel and return
             </Link>
@@ -755,4 +795,3 @@ export default function ServiceEnquiryForm() {
     </div>
   )
 }
-

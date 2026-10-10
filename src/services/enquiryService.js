@@ -53,8 +53,12 @@ export async function submitServiceEnquiry(payload) {
   // Maintain client-side persistence for local profile activity history
   try {
     const existing = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]')
+    const localPayload = { ...payload }
+    delete localPayload.authToken
+    delete localPayload.attachment
+
     const localRecord = {
-      id: result.id || (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`),
+      id: result.data?.id || result.id || (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`),
       type: 'service-enquiry',
       serviceSlug: payload.serviceSlug,
       subject: payload.serviceTitle,
@@ -62,7 +66,9 @@ export async function submitServiceEnquiry(payload) {
       email: payload.commonFields?.email || '',
       phone: payload.commonFields?.phone || '',
       submittedAt: payload.timestamp,
-      ...payload,
+      ...localPayload,
+      cvUrl: result.data?.cvUrl || null,
+      attachment: result.data?.attachment || null,
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...existing, localRecord]))
   } catch (storageError) {

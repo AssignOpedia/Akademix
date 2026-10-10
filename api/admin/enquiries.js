@@ -34,6 +34,7 @@ export default async function handler(req, res) {
       }
 
       const enquiries = await Enquiry.find(filter)
+        .select('-attachment.data')
         .sort({ createdAt: -1 })
         .populate('user', 'name email phone college course year')
         .lean()

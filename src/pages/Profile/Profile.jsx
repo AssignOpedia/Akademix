@@ -46,7 +46,16 @@ function readProfileActivity(email) {
     : true
 
   const inquiries = readList('akademix-inquiries')
-    .map((item, storageIndex) => ({ ...item, storageKey: 'akademix-inquiries', storageIndex, formKind: item.type === 'study-abroad-support' ? 'Study abroad support' : 'Professor enquiry' }))
+    .map((item, storageIndex) => ({
+      ...item,
+      storageKey: 'akademix-inquiries',
+      storageIndex,
+      formKind: item.type === 'service-enquiry'
+        ? 'Service enquiry'
+        : item.type === 'study-abroad-support'
+          ? 'Study abroad support'
+          : 'Professor enquiry',
+    }))
     .filter((item) => item.email?.toLowerCase() === normalizedEmail)
   const mentorRequests = readList('akademix-mentor-requests')
     .map((item, storageIndex) => ({ ...item, storageKey: 'akademix-mentor-requests', storageIndex, formKind: 'Mentor request' }))
@@ -181,7 +190,11 @@ export default function Profile() {
         {activities.length ? <div className="mt-5 space-y-4">
           {activities.map((item, index) => {
             const submittedAt = item.submittedAt || item.savedAt
-            const title = item.mentorName || item.subject || item.destination || item.formKind
+            const title = item.serviceTitle || item.mentorName || item.subject || item.destination || item.formKind
+            const isServiceEnquiry = item.type === 'service-enquiry'
+            const answers = item.serviceSpecificAnswers || item.answers || {}
+            const deadline = answers.deadline || item.deadline
+            const attachmentName = item.attachment?.filename || answers.existingCv || answers.cvFile
             return (
               <article key={item.id || `${item.formKind}-${submittedAt}-${index}`} className="card p-5">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -194,11 +207,25 @@ export default function Profile() {
                   </div>
                 </div>
                 <dl className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                  {Object.entries(item).filter(([key, value]) => !['id', 'submittedAt', 'savedAt', 'name', 'email', 'mentorName', 'subject', 'destination', 'context', 'type', 'formKind', 'storageKey', 'storageIndex', 'courseIds', 'professorIds', 'universityIds', 'image'].includes(key) && value != null && value !== '').map(([key, value]) => (
-                    <div key={key}><dt className="text-xs text-slate">{prettyLabel(key)}</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{Array.isArray(value) ? value.join(', ') : String(value)}</dd></div>
-                  ))}
-                  {item.message && <div className="sm:col-span-2"><dt className="text-xs text-slate">Message</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{item.message}</dd></div>}
-                  {item.text && <div className="sm:col-span-2"><dt className="text-xs text-slate">Review</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{item.text}</dd></div>}
+                  {isServiceEnquiry ? (
+                    <>
+                      {item.serviceSlug && <div><dt className="text-xs text-slate">Service name</dt><dd className="mt-0.5 text-sm text-ink">{prettyLabel(item.serviceSlug.replace(/-/g, ' '))}</dd></div>}
+                      {item.serviceTitle && <div><dt className="text-xs text-slate">Service title</dt><dd className="mt-0.5 text-sm text-ink">{item.serviceTitle}</dd></div>}
+                      <div><dt className="text-xs text-slate">Name</dt><dd className="mt-0.5 text-sm text-ink">{item.name || 'Not provided'}</dd></div>
+                      <div><dt className="text-xs text-slate">Phone</dt><dd className="mt-0.5 text-sm text-ink">{item.phone || item.commonFields?.phone || 'Not provided'}</dd></div>
+                      {deadline && <div><dt className="text-xs text-slate">Deadline</dt><dd className="mt-0.5 text-sm text-ink">{deadline}</dd></div>}
+                      {item.additionalNotes && <div className="sm:col-span-2"><dt className="text-xs text-slate">Additional notes</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{item.additionalNotes}</dd></div>}
+                      {attachmentName && <div><dt className="text-xs text-slate">Attachment</dt><dd className="mt-0.5 break-all text-sm text-ink">{attachmentName}</dd></div>}
+                    </>
+                  ) : (
+                    <>
+                      {Object.entries(item).filter(([key, value]) => !['id', 'submittedAt', 'savedAt', 'name', 'email', 'mentorName', 'subject', 'destination', 'context', 'type', 'formKind', 'storageKey', 'storageIndex', 'courseIds', 'professorIds', 'universityIds', 'image'].includes(key) && value != null && value !== '').map(([key, value]) => (
+                        <div key={key}><dt className="text-xs text-slate">{prettyLabel(key)}</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{Array.isArray(value) ? value.join(', ') : String(value)}</dd></div>
+                      ))}
+                      {item.message && <div className="sm:col-span-2"><dt className="text-xs text-slate">Message</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{item.message}</dd></div>}
+                      {item.text && <div className="sm:col-span-2"><dt className="text-xs text-slate">Review</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm text-ink">{item.text}</dd></div>}
+                    </>
+                  )}
                 </dl>
               </article>
             )
